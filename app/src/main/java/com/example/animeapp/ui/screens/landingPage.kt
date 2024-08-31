@@ -16,12 +16,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.focusModifier
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -37,7 +35,11 @@ import com.example.animeapp.ui.theme.AnimeAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LandingPage(modifier: Modifier = Modifier) {
+fun LandingPage(
+    onLoginButtonClicked : () -> Unit,
+    onSignButtonClicked : () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Box(modifier = modifier) {
         Image(
             painter = painterResource(id = R.drawable.anime_posters),
@@ -71,7 +73,7 @@ fun LandingPage(modifier: Modifier = Modifier) {
                 )
             Spacer(modifier = Modifier.height(164.dp))
                 Button(
-                    onClick = {},
+                    onClick = onLoginButtonClicked,
                     modifier = Modifier
                         .width(232.dp)
                         .height(61.dp)
@@ -84,19 +86,19 @@ fun LandingPage(modifier: Modifier = Modifier) {
                 }
             Spacer(modifier = Modifier.height(22.dp))
                 Button(
-                    onClick = {},
+                    onClick =onSignButtonClicked,
                     modifier = Modifier
                         .width(232.dp)
                         .height(61.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color.Black
                     )
                 ) {
                     Text(
                         text = stringResource(R.string.signup),
                         textAlign = TextAlign.Center,
-                        fontSize = 24.sp
+                        fontSize = 24.sp,
+                        color = Color.Black
                     )
                 }
 
@@ -109,6 +111,9 @@ fun LandingPage(modifier: Modifier = Modifier) {
 @Composable
 fun LandingPagePreview() {
     AnimeAppTheme {
-     LandingPage(modifier = Modifier.fillMaxSize())
+    LandingPage(
+        onLoginButtonClicked = { /*TODO*/ }, onSignButtonClicked = { /*TODO*/ },
+        modifier = Modifier.fillMaxSize()
+    )
     }
 }
