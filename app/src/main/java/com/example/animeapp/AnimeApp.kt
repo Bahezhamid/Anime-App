@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.animeapp.ui.AppViewModelProvider
 import com.example.animeapp.ui.navigation.AnimeScreen
 import com.example.animeapp.ui.screens.LandingPage
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpPage
@@ -52,7 +53,7 @@ fun AnimeApp(
               authSwitchMessage = stringResource(R.string.don_t_have_an_account_signup_here),
               onBackPressed = {navController.navigateUp()},
               onAuthSwitchClick = {navController.navigate(AnimeScreen.SignUp.name)},
-              viewModel = viewModel()
+              viewModel = viewModel(factory = AppViewModelProvider.Factory)
           )
       }
       composable(route = AnimeScreen.SignUp.name) {
@@ -64,7 +65,7 @@ fun AnimeApp(
               authSwitchMessage = stringResource(R.string.already_have_an_account_login_here),
               onBackPressed = {navController.navigateUp()},
               onAuthSwitchClick = {navController.navigate(AnimeScreen.LogIn.name)},
-              viewModel = viewModel()
+              viewModel = viewModel(factory = AppViewModelProvider.Factory)
           )
       }
   }

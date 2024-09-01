@@ -15,9 +15,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +35,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -38,7 +43,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +54,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import com.example.animeapp.R
 import com.example.animeapp.ui.theme.AnimeAppTheme
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlin.math.log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +71,8 @@ fun LoginAndSignUpPage(
     viewModel: LoginAndSignUpViewModel ,
     modifier: Modifier = Modifier
 ) {
-
+    val loginAndSignUpUiState = viewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -108,22 +120,32 @@ fun LoginAndSignUpPage(
                     )
                 Spacer(modifier = Modifier.height(61.dp))
                 LoginAndSignUpTextField(
-                    textFieldValue = viewModel.emailTextFieldValue.collectAsState().value,
+                    textFieldValue = loginAndSignUpUiState.value.email,
                     onTextFieldValueChange = { newValue -> viewModel.updateEmailTextFieldValue(newValue) } ,
-                    placeHolderValue = stringResource(R.string.email_or_username)
+                    placeHolderValue = stringResource(R.string.email)
                 )
+                if(isSignUpPage) {
+                    Spacer(modifier = Modifier.height(15.dp))
+                    LoginAndSignUpTextField(
+                        textFieldValue = loginAndSignUpUiState.value.userName,
+                        onTextFieldValueChange = {newValue -> viewModel.updateUserNameTextFieldValue(newValue)},
+                        placeHolderValue = stringResource(R.string.userName),
+                    )
+                }
                 Spacer(modifier = Modifier.height(31.dp))
                LoginAndSignUpTextField(
-                   textFieldValue = viewModel.passwordTextFieldValue.collectAsState().value,
+                   textFieldValue = loginAndSignUpUiState.value.password,
                    onTextFieldValueChange ={newValue -> viewModel.updatePasswordTextFieldValue(newValue)} ,
-                   placeHolderValue = stringResource(R.string.password)
+                   placeHolderValue = stringResource(R.string.password),
+                   isPassword = true
                )
                 if(isSignUpPage) {
                     Spacer(modifier = Modifier.height(15.dp))
                   LoginAndSignUpTextField(
-                      textFieldValue = viewModel.confirmPasswordTextFieldValue.collectAsState().value,
+                      textFieldValue = loginAndSignUpUiState.value.confirmPassword,
                       onTextFieldValueChange = {newValue -> viewModel.updateConfirmPasswordTextFieldValue(newValue)},
-                      placeHolderValue = stringResource(R.string.confirm_password)
+                      placeHolderValue = stringResource(R.string.confirm_password),
+                      isPassword = true
                   )
                 }
                 Spacer(modifier = Modifier.height(15.dp))
@@ -132,10 +154,14 @@ fun LoginAndSignUpPage(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable {
+                            viewModel.updateRememberMeValue(!loginAndSignUpUiState.value.isRememberMeOn)
+                        }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
+                            imageVector = if(loginAndSignUpUiState.value.isRememberMeOn)
+                                Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
                             contentDescription = stringResource(R.string.remember_me_icon),
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(16.dp)
@@ -150,9 +176,13 @@ fun LoginAndSignUpPage(
                         Text(text = stringResource(R.string.forget_password))
                     }
                 }
-                Spacer(modifier = Modifier.height(45.dp))
+                Spacer(modifier = Modifier.height(25.dp))
                 Button(
-                    onClick = { },
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                        }
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary,
                     ),
@@ -177,7 +207,7 @@ fun LoginAndSignUpPage(
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.alpha(0.8f)
                 )
-                Spacer(modifier = Modifier.height(19.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Row {
                     Icon(
                         painter = painterResource(id = R.drawable.facebook_icons),
@@ -211,12 +241,14 @@ fun LoginAndSignUpPage(
 fun LoginAndSignUpTextField(
     textFieldValue : String,
     onTextFieldValueChange : (String) -> Unit,
-    placeHolderValue : String
+    placeHolderValue : String,
+    isPassword : Boolean = false
 ) {
     TextField(
         value = textFieldValue,
         onValueChange = {onTextFieldValueChange(it)},
         singleLine = true,
+
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(15.dp)),
@@ -225,6 +257,7 @@ fun LoginAndSignUpTextField(
             unfocusedIndicatorColor = Color.Transparent,
         ),
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.Black),
+
         placeholder = {
             Text(
                 text = placeHolderValue,
@@ -233,10 +266,12 @@ fun LoginAndSignUpTextField(
                 color = Color(0xff777777)
 
             )
-        }
+        },
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+        
     )
 }
-@Preview(showBackground = true)
+
 @Preview(showBackground = true)
 @Composable
 fun LoginAndSignupPagePreview() {

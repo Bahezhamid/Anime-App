@@ -17,4 +17,6 @@
     <string name="create_an_account">Create an account</string>
     <string name="don_t_have_an_account_signup_here">Don\'t have an account? Signup here</string>
     <string name="already_have_an_account_login_here">Already have an account? Login here</string>
+    <string name="email">Email</string>
+    <string name="userName">User Name</string>
 </resources>
