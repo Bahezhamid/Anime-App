@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -35,14 +36,18 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
@@ -69,8 +74,14 @@ fun LoginAndSignUpPage(
     onBackPressed : () -> Unit,
     onAuthSwitchClick : () -> Unit,
     viewModel: LoginAndSignUpViewModel ,
+
     modifier: Modifier = Modifier
 ) {
+    val emailFocusRequester = remember { FocusRequester() }
+    val userNameFocusRequester = remember { FocusRequester() }
+    val passwordFocusRequester = remember { FocusRequester() }
+    val confirmPasswordFocusRequester = remember { FocusRequester() }
+
     val loginAndSignUpUiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     Column(
@@ -122,7 +133,15 @@ fun LoginAndSignUpPage(
                 LoginAndSignUpTextField(
                     textFieldValue = loginAndSignUpUiState.value.email,
                     onTextFieldValueChange = { newValue -> viewModel.updateEmailTextFieldValue(newValue) } ,
-                    placeHolderValue = stringResource(R.string.email)
+                    placeHolderValue = stringResource(R.string.email),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Next
+                    ),
+                    focusRequester = emailFocusRequester,
+                    onImeAction = { if(isSignUpPage)userNameFocusRequester.requestFocus()
+                    else passwordFocusRequester.requestFocus() },
+                    isError = viewModel.uiState.collectAsState().value.emailError !=null,
+                    errorMessage = if (isSignUpPage) viewModel.uiState.collectAsState().value.emailError else null
                 )
                 if(isSignUpPage) {
                     Spacer(modifier = Modifier.height(15.dp))
@@ -130,6 +149,14 @@ fun LoginAndSignUpPage(
                         textFieldValue = loginAndSignUpUiState.value.userName,
                         onTextFieldValueChange = {newValue -> viewModel.updateUserNameTextFieldValue(newValue)},
                         placeHolderValue = stringResource(R.string.userName),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Next
+                        ),
+                        focusRequester = userNameFocusRequester,
+                        onImeAction = { passwordFocusRequester.requestFocus() },
+                        isError = viewModel.uiState.collectAsState().value.userNameError !=null,
+                        errorMessage = viewModel.uiState.collectAsState().value.userNameError
+
                     )
                 }
                 Spacer(modifier = Modifier.height(31.dp))
@@ -137,7 +164,19 @@ fun LoginAndSignUpPage(
                    textFieldValue = loginAndSignUpUiState.value.password,
                    onTextFieldValueChange ={newValue -> viewModel.updatePasswordTextFieldValue(newValue)} ,
                    placeHolderValue = stringResource(R.string.password),
-                   isPassword = true
+                   isPassword = true,
+                   keyboardOptions = KeyboardOptions.Default.copy(
+                       imeAction = ImeAction.Next
+                   ),
+                   focusRequester = passwordFocusRequester,
+                   onImeAction = { if(isSignUpPage)confirmPasswordFocusRequester.requestFocus()
+                       else   coroutineScope.launch {
+                       viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                   }
+                   },
+                   isError = viewModel.uiState.collectAsState().value.passwordError != null,
+                   errorMessage = if(isSignUpPage)viewModel.uiState.collectAsState().value.passwordError else
+                   viewModel.loginUiState.collectAsState().value.errorMessage
                )
                 if(isSignUpPage) {
                     Spacer(modifier = Modifier.height(15.dp))
@@ -145,7 +184,20 @@ fun LoginAndSignUpPage(
                       textFieldValue = loginAndSignUpUiState.value.confirmPassword,
                       onTextFieldValueChange = {newValue -> viewModel.updateConfirmPasswordTextFieldValue(newValue)},
                       placeHolderValue = stringResource(R.string.confirm_password),
-                      isPassword = true
+                      isPassword = true,
+                      keyboardOptions = KeyboardOptions.Default.copy(
+                          imeAction = ImeAction.Done
+                      ),
+                      focusRequester = confirmPasswordFocusRequester,
+                      onImeAction = {
+                          coroutineScope.launch {
+                              viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                              viewModel.login(email = viewModel.uiState.value.email,
+                                  password = viewModel.uiState.value.password)
+                          }
+                      },
+                      isError = viewModel.uiState.collectAsState().value.confirmPasswordError != null,
+                      errorMessage = viewModel.uiState.collectAsState().value.confirmPasswordError
                   )
                 }
                 Spacer(modifier = Modifier.height(15.dp))
@@ -180,10 +232,14 @@ fun LoginAndSignUpPage(
                 Button(
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                            if (isSignUpPage) {
+                                viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                            }
+                            viewModel.login(email = viewModel.uiState.value.email,
+                                password = viewModel.uiState.value.password)
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(
+                            colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary,
                     ),
                     modifier = Modifier
@@ -242,16 +298,22 @@ fun LoginAndSignUpTextField(
     textFieldValue : String,
     onTextFieldValueChange : (String) -> Unit,
     placeHolderValue : String,
-    isPassword : Boolean = false
+    isPassword : Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    focusRequester: FocusRequester,
+    onImeAction: () -> Unit,
+    isError : Boolean= false,
+    errorMessage : String? = ""
 ) {
     TextField(
         value = textFieldValue,
         onValueChange = {onTextFieldValueChange(it)},
         singleLine = true,
-
+        isError = isError,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(15.dp)),
+            .clip(RoundedCornerShape(15.dp))
+            .focusRequester(focusRequester),
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
@@ -268,8 +330,15 @@ fun LoginAndSignUpTextField(
             )
         },
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-        
+        keyboardOptions = keyboardOptions,
+        keyboardActions = KeyboardActions(onAny = { onImeAction() }),
+
     )
+    errorMessage.let { error ->
+        if (error != null) {
+            Text(text = error, color = Color.Red)
+        }
+    }
 }
 
 @Preview(showBackground = true)

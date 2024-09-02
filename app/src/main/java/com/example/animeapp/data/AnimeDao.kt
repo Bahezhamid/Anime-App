@@ -13,4 +13,8 @@ interface AnimeDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(users: Users)
+    @Query("select * from Users where email = :email And password = :password")
+    fun login(email : String, password: String) : Flow<Users>
+    @Query("select COUNT(*) from Users where email = :email")
+    fun isEmailExist(email: String) : Int
 }

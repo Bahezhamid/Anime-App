@@ -6,5 +6,7 @@ data class LoginAndSignUpUiState(
     val confirmPassword: String = "",
     val isRememberMeOn: Boolean = true,
     val emailError: String? = null,
-    val passwordError: String? = null
+    val passwordError: String? = null,
+    val confirmPasswordError: String? = null,
+    val userNameError : String? = null
 )
