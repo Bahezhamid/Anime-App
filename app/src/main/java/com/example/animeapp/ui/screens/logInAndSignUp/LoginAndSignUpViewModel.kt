@@ -66,34 +66,32 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
         }
     }
     suspend fun login(email: String, password: String) {
-
         animeRepository.login(email = email, password = password)
-            .map { user ->
-                UsersUiState(user.email, user.password, user.userName)
-            }
             .onStart {
-
                 _loginUiState.value = _loginUiState.value.copy(
                     errorMessage = null,
+                    isSuccess = false
+                )
+            }
+            .map { user ->
+                UsersUiState(
+                    email = user.email,
+                    password = user.password,
+                    userName = user.userName,
                     isSuccess = true
                 )
             }
             .catch { exception ->
-
                 _loginUiState.value = _loginUiState.value.copy(
                     errorMessage = "Invalid email or password",
                     isSuccess = false
                 )
             }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000L),
-                initialValue = UsersUiState()
-            ).collect { newState ->
+            .collect { newState ->
                 _loginUiState.value = newState
+                Log.d("hello", newState.toString())
             }
     }
-
 
     private fun validateInput(signUpState: LoginAndSignUpUiState): Boolean {
         val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"

@@ -35,7 +35,9 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -73,6 +75,7 @@ fun LoginAndSignUpPage(
     authSwitchMessage : String,
     onBackPressed : () -> Unit,
     onAuthSwitchClick : () -> Unit,
+    onLoginAndSignUpButtonClicked : () -> Unit,
     viewModel: LoginAndSignUpViewModel ,
 
     modifier: Modifier = Modifier
@@ -82,8 +85,15 @@ fun LoginAndSignUpPage(
     val passwordFocusRequester = remember { FocusRequester() }
     val confirmPasswordFocusRequester = remember { FocusRequester() }
 
-    val loginAndSignUpUiState = viewModel.uiState.collectAsState()
+    val loginAndSignUpUiState by viewModel.uiState.collectAsState()
+    val loginUiState by viewModel.loginUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(loginUiState) {
+        if (loginUiState.isSuccess) {
+            onLoginAndSignUpButtonClicked()
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -131,7 +141,7 @@ fun LoginAndSignUpPage(
                     )
                 Spacer(modifier = Modifier.height(61.dp))
                 LoginAndSignUpTextField(
-                    textFieldValue = loginAndSignUpUiState.value.email,
+                    textFieldValue = loginAndSignUpUiState.email,
                     onTextFieldValueChange = { newValue -> viewModel.updateEmailTextFieldValue(newValue) } ,
                     placeHolderValue = stringResource(R.string.email),
                     keyboardOptions = KeyboardOptions.Default.copy(
@@ -146,7 +156,7 @@ fun LoginAndSignUpPage(
                 if(isSignUpPage) {
                     Spacer(modifier = Modifier.height(15.dp))
                     LoginAndSignUpTextField(
-                        textFieldValue = loginAndSignUpUiState.value.userName,
+                        textFieldValue = loginAndSignUpUiState.userName,
                         onTextFieldValueChange = {newValue -> viewModel.updateUserNameTextFieldValue(newValue)},
                         placeHolderValue = stringResource(R.string.userName),
                         keyboardOptions = KeyboardOptions.Default.copy(
@@ -161,7 +171,7 @@ fun LoginAndSignUpPage(
                 }
                 Spacer(modifier = Modifier.height(31.dp))
                LoginAndSignUpTextField(
-                   textFieldValue = loginAndSignUpUiState.value.password,
+                   textFieldValue = loginAndSignUpUiState.password,
                    onTextFieldValueChange ={newValue -> viewModel.updatePasswordTextFieldValue(newValue)} ,
                    placeHolderValue = stringResource(R.string.password),
                    isPassword = true,
@@ -170,8 +180,16 @@ fun LoginAndSignUpPage(
                    ),
                    focusRequester = passwordFocusRequester,
                    onImeAction = { if(isSignUpPage)confirmPasswordFocusRequester.requestFocus()
-                       else   coroutineScope.launch {
-                       viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                       else {
+                       coroutineScope.launch {
+                           viewModel.login(
+                               email = viewModel.uiState.value.email,
+                               password = viewModel.uiState.value.password
+                           )
+                       }
+                       if (viewModel.loginUiState.value.isSuccess) {
+                           onLoginAndSignUpButtonClicked()
+                       }
                    }
                    },
                    isError = viewModel.uiState.collectAsState().value.passwordError != null,
@@ -181,7 +199,7 @@ fun LoginAndSignUpPage(
                 if(isSignUpPage) {
                     Spacer(modifier = Modifier.height(15.dp))
                   LoginAndSignUpTextField(
-                      textFieldValue = loginAndSignUpUiState.value.confirmPassword,
+                      textFieldValue = loginAndSignUpUiState.confirmPassword,
                       onTextFieldValueChange = {newValue -> viewModel.updateConfirmPasswordTextFieldValue(newValue)},
                       placeHolderValue = stringResource(R.string.confirm_password),
                       isPassword = true,
@@ -194,6 +212,9 @@ fun LoginAndSignUpPage(
                               viewModel.saveAccount(signUpState = viewModel.uiState.value)
                               viewModel.login(email = viewModel.uiState.value.email,
                                   password = viewModel.uiState.value.password)
+                          }
+                          if(viewModel.loginUiState.value.isSuccess) {
+                              onLoginAndSignUpButtonClicked()
                           }
                       },
                       isError = viewModel.uiState.collectAsState().value.confirmPasswordError != null,
@@ -208,11 +229,11 @@ fun LoginAndSignUpPage(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable {
-                            viewModel.updateRememberMeValue(!loginAndSignUpUiState.value.isRememberMeOn)
+                            viewModel.updateRememberMeValue(!loginAndSignUpUiState.isRememberMeOn)
                         }
                     ) {
                         Icon(
-                            imageVector = if(loginAndSignUpUiState.value.isRememberMeOn)
+                            imageVector = if(loginAndSignUpUiState.isRememberMeOn)
                                 Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
                             contentDescription = stringResource(R.string.remember_me_icon),
                             tint = MaterialTheme.colorScheme.onPrimary,
@@ -237,6 +258,9 @@ fun LoginAndSignUpPage(
                             }
                             viewModel.login(email = viewModel.uiState.value.email,
                                 password = viewModel.uiState.value.password)
+                        }
+                        if(viewModel.loginUiState.value.isSuccess) {
+                            onLoginAndSignUpButtonClicked()
                         }
                     },
                             colors = ButtonDefaults.buttonColors(
