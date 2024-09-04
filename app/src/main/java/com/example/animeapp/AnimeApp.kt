@@ -2,16 +2,12 @@ package com.example.animeapp
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.LibraryBooks
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.BottomAppBar
@@ -110,7 +106,7 @@ fun AnimeBottomAppBar(
     BottomAppBar(
         tonalElevation = 8.dp,
         contentPadding = PaddingValues(horizontal = 16.dp),
-        containerColor = Color.Transparent,
+        containerColor = MaterialTheme.colorScheme.primary,
         modifier = Modifier.fillMaxWidth(),
         contentColor = MaterialTheme.colorScheme.onPrimary
     ) {
@@ -119,7 +115,7 @@ fun AnimeBottomAppBar(
             Icon(
                 painter = painterResource(id = R.drawable.ic_home),
                 contentDescription = "Home",
-                modifier = Modifier.size(50.dp)
+                modifier = Modifier.size(60.dp)
             )
         }
         Spacer(modifier = Modifier.weight(1f))
@@ -127,21 +123,21 @@ fun AnimeBottomAppBar(
             Icon(
                 painter = painterResource(id = R.drawable.ic_saved),
                 contentDescription = "Saved",
-                modifier = Modifier.size(50.dp)
+                modifier = Modifier.size(60.dp)
             )
         }
         Spacer(modifier = Modifier.weight(1f))
         IconButton(onClick = onBookClick) {
             Icon(imageVector = Icons.Filled.VideoLibrary,
                 contentDescription = "Anime And Manga",
-                modifier = Modifier.size(50.dp)
+                modifier = Modifier.size(60.dp)
             )
         }
         Spacer(modifier = Modifier.weight(1f))
         IconButton(onClick = onProfileClick) {
             Icon(imageVector = Icons.Filled.Person,
                 contentDescription = "Profile",
-                modifier = Modifier.size(50.dp)
+                modifier = Modifier.size(60.dp)
             )
         }
         Spacer(modifier = Modifier.weight(0.5f))
