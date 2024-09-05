@@ -7,6 +7,8 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.animeapp.AnimeApplication
+import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
+
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 
 object AppViewModelProvider {
@@ -16,8 +18,11 @@ object AppViewModelProvider {
                 animeApplication().container.animeRepository
             )
         }
-
+        initializer {
+            HomePageViewModel(animeApplication().container.animeDataRepository)
+        }
     }
 }
+
 fun CreationExtras.animeApplication(): AnimeApplication =
     (this[AndroidViewModelFactory.APPLICATION_KEY] as AnimeApplication)

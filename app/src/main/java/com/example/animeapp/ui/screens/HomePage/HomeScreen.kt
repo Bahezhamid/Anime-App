@@ -1,7 +1,5 @@
-package com.example.animeapp.ui.screens
+package com.example.animeapp.ui.screens.HomePage
 
-import android.media.Image
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,7 +17,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -30,7 +27,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,23 +36,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.animeapp.AnimeBottomAppBar
 import com.example.animeapp.R
+import com.example.animeapp.ui.AppViewModelProvider
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 
 @Composable
 fun HomeScreen(
-    loginAndSignUpViewModel: LoginAndSignUpViewModel
+    loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    val anime = homePageViewModel.uiState
     val loginUiState by loginAndSignUpViewModel.loginUiState.collectAsState()
     Scaffold(
         bottomBar = {
@@ -109,8 +106,8 @@ fun HomeScreen(
                         .align(AbsoluteAlignment.Right)
                         .size(50.dp)
                         .clip(RoundedCornerShape(50.dp))
-                        .clickable {  },
-                        ) {
+                        .clickable { },
+                    ) {
                         Icon(
                             imageVector = Icons.Outlined.Search,
                             contentDescription = "Search",
@@ -123,7 +120,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceAround,
                         modifier = Modifier.fillMaxWidth(),
 
-                    ) {
+                        ) {
                         Text(text = "Action",
                             style = MaterialTheme.typography.titleMedium
                         )
@@ -141,7 +138,7 @@ fun HomeScreen(
                     Row(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         modifier = Modifier.fillMaxWidth()
-                        ) {
+                    ) {
                         Box(
                             modifier = Modifier
                                 .size(70.dp)
@@ -167,7 +164,7 @@ fun HomeScreen(
                             modifier = Modifier
                                 .width(126.dp)
                                 .height(56.dp)
-                            ) {
+                        ) {
                             Text(text = "Play", style = MaterialTheme.typography.headlineSmall)
                         }
                         Box(
@@ -200,7 +197,7 @@ fun HomeScreen(
             }
             Text(text = "Free To Watch", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(10.dp))
-           AnimeGrid(modifier = Modifier.padding(innerPadding))
+            AnimeGrid(modifier = Modifier.padding(innerPadding))
         }
     }
 }
@@ -220,14 +217,14 @@ fun AnimeGrid(modifier: Modifier) {
             bottom = 10.dp,
         ),
     ) {
-       items(itemsList) {anime ->
-           AnimeCard(anime = anime)
-       }
+        items(itemsList) {anime ->
+            AnimeCard(anime = anime)
+        }
     }
 }
 @Composable
 fun AnimeCard(
-   anime: Anime
+    anime: Anime
 ) {
     Column (
         modifier = Modifier

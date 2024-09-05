@@ -87,4 +87,15 @@ dependencies {
     api (libs.kotlinx.coroutines.core)
     api (libs.kotlinx.coroutines.android)
 
+    implementation (libs.gson)
+
+    //retrofit
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.retrofit)
+    implementation(libs.coil.compose)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.okhttp)
+    implementation (libs.logging.interceptor)
+    implementation ("com.google.code.gson:gson:2.8.7")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 }
