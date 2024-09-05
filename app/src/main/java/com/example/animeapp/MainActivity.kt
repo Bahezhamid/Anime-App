@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AnimeAppTheme {
-          HomeScreen(loginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory))
+                AnimeApp()
             }
         }
     }
