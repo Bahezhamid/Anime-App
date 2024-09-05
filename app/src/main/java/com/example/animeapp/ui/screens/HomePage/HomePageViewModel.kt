@@ -13,9 +13,9 @@ import kotlinx.coroutines.launch
 class HomePageViewModel(private val animeDataRepository: AnimeDataRepository) : ViewModel(){
     private var _uiState = MutableStateFlow<AnimeData?>(null)
     val uiState get() = _uiState.asStateFlow()
-init {
-    getAnimeData()
-}
+    init {
+        getAnimeData()
+    }
     private fun getAnimeData() {
         viewModelScope.launch {
             try {

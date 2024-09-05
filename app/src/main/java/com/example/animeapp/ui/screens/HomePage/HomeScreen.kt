@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -40,11 +41,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.animeapp.AnimeBottomAppBar
 import com.example.animeapp.R
+import com.example.animeapp.model.AnimeData
+import com.example.animeapp.model.Data
 import com.example.animeapp.ui.AppViewModelProvider
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 
@@ -53,7 +59,7 @@ fun HomeScreen(
     loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory),
     homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val anime = homePageViewModel.uiState
+    val anime = homePageViewModel.uiState.collectAsState()
     val loginUiState by loginAndSignUpViewModel.loginUiState.collectAsState()
     Scaffold(
         bottomBar = {
@@ -75,14 +81,17 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .height(560.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.attackposter),
+
+                AsyncImage(model =ImageRequest
+                    .Builder(context = LocalContext.current)
+                    .data(anime.value?.data?.first()?.attributes?.posterImage?.medium)
+                    .crossfade(true)
+                    .build() ,
                     contentDescription = "poster",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(),
-                )
+                        .fillMaxHeight(),)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -197,19 +206,25 @@ fun HomeScreen(
             }
             Text(text = "Free To Watch", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(10.dp))
-            AnimeGrid(modifier = Modifier.padding(innerPadding))
+            anime.value?.data?.let {
+                AnimeGrid(listofAnime = it,
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
         }
     }
 }
-data class Anime(val title: String, val poster: Int)
 
 @Composable
-fun AnimeGrid(modifier: Modifier) {
-    val itemsList = List(20) { Anime("Jujutsu Kaisen", R.drawable.jujutsu_poster) }
+fun AnimeGrid(
+    listofAnime: List<Data>,
+    modifier: Modifier
+) {
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
+            .padding(bottom = 80.dp),
         contentPadding = PaddingValues(
             start = 10.dp,
             top = 10.dp,
@@ -217,35 +232,46 @@ fun AnimeGrid(modifier: Modifier) {
             bottom = 10.dp,
         ),
     ) {
-        items(itemsList) {anime ->
-            AnimeCard(anime = anime)
+
+        items(listofAnime) { anime ->
+            AnimeCard(animeTitle = anime.attributes?.titles?.enJp,
+                animePoster = anime.attributes?.posterImage?.medium
+                )
         }
     }
 }
 @Composable
 fun AnimeCard(
-    anime: Anime
+    animeTitle: String?,
+    animePoster : String?,
 ) {
     Column (
         modifier = Modifier
             .padding(end = 10.dp, bottom = 10.dp)
-            .heightIn(min = 200.dp, max = 220.dp),
+            .wrapContentHeight()
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Image(
-            painter = painterResource(id = anime.poster),
-            contentDescription = "",
+
+        AsyncImage(model =ImageRequest
+            .Builder(context = LocalContext.current)
+            .data(animePoster)
+            .crossfade(true)
+            .build() ,
+            contentDescription = "poster",
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 150.dp, max = 190.dp)
+                .heightIn(min = 120.dp, max = 190.dp)
                 .clip(RoundedCornerShape(10.dp))
             ,
             contentScale = ContentScale.Crop
         )
         Spacer(modifier = Modifier.height(5.dp))
-        Text(
-            text = anime.title,
-            style = MaterialTheme.typography.bodyLarge,
-        )
+        if (animeTitle != null) {
+            Text(
+                text = animeTitle,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
     }
 }

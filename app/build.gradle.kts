@@ -98,4 +98,9 @@ dependencies {
     implementation (libs.logging.interceptor)
     implementation ("com.google.code.gson:gson:2.8.7")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Coil
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 }
