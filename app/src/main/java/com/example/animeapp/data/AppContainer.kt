@@ -12,7 +12,7 @@ interface AppContainer {
     val animeDataRepository : AnimeDataRepository
 }
 class AppDataContainer(private val context: Context) : AppContainer {
-    private val baseUrl = "https://kitsu.io/api/edge/"
+    private val baseUrl = "https://api.jikan.moe/v4/"
     override val animeRepository: AnimeRepository by lazy {
         OfflineAnimeRepository(AnimeDatabase.getDatabase(context).animeDao())
     }

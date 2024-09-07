@@ -59,7 +59,7 @@ fun HomeScreen(
     loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory),
     homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val anime = homePageViewModel.uiState.collectAsState()
+    val allAnimeData = homePageViewModel.uiState.collectAsState()
     val loginUiState by loginAndSignUpViewModel.loginUiState.collectAsState()
     Scaffold(
         bottomBar = {
@@ -84,7 +84,7 @@ fun HomeScreen(
 
                 AsyncImage(model =ImageRequest
                     .Builder(context = LocalContext.current)
-                    .data(anime.value?.data?.first()?.attributes?.posterImage?.medium)
+                    .data(allAnimeData.value?.data?.first()?.images?.jpg?.largeImageUrl)
                     .crossfade(true)
                     .build() ,
                     contentDescription = "poster",
@@ -125,6 +125,7 @@ fun HomeScreen(
                         )
                     }
                     Spacer(modifier = Modifier.weight(1f))
+
                     Row(
                         horizontalArrangement = Arrangement.SpaceAround,
                         modifier = Modifier.fillMaxWidth(),
@@ -206,24 +207,21 @@ fun HomeScreen(
             }
             Text(text = "Free To Watch", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(10.dp))
-            anime.value?.data?.let {
-                AnimeGrid(listofAnime = it,
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
+           AnimeGrid(allAnimeData = allAnimeData.value, modifier = Modifier.padding(innerPadding))
         }
     }
 }
 
 @Composable
 fun AnimeGrid(
-    listofAnime: List<Data>,
+    allAnimeData: AnimeData?,
     modifier: Modifier
 ) {
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .padding(bottom = 80.dp),
         contentPadding = PaddingValues(
             start = 10.dp,
@@ -232,11 +230,10 @@ fun AnimeGrid(
             bottom = 10.dp,
         ),
     ) {
-
-        items(listofAnime) { anime ->
-            AnimeCard(animeTitle = anime.attributes?.titles?.enJp,
-                animePoster = anime.attributes?.posterImage?.medium
-                )
+        allAnimeData?.data?.let {
+            items(it.filterNotNull()) { anime ->
+                AnimeCard(animeTitle = anime.title, animePoster = anime.images?.jpg?.imageUrl)
+            }
         }
     }
 }

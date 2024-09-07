@@ -19,7 +19,7 @@ class HomePageViewModel(private val animeDataRepository: AnimeDataRepository) : 
     private fun getAnimeData() {
         viewModelScope.launch {
             try {
-              _uiState.value =animeDataRepository.getAnimeData()
+              _uiState.value =animeDataRepository.getAnimeData(3)
             } catch (e: Exception) {
                 Log.e("HomePageViewModel", "Error fetching data", e)
                 _uiState.value = null
