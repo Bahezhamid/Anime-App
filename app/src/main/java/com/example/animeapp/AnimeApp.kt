@@ -28,6 +28,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.animeapp.ui.AppViewModelProvider
 import com.example.animeapp.ui.navigation.AnimeScreen
+import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsPage
 import com.example.animeapp.ui.screens.HomePage.HomeScreen
 import com.example.animeapp.ui.screens.LandingPage
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpPage
@@ -39,60 +40,65 @@ fun AnimeApp(
     navController: NavHostController = rememberNavController(),
     loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentScreen = AnimeScreen.valueOf(
-        backStackEntry?.destination?.route ?: AnimeScreen.Start.name
-    )
-  NavHost( navController = navController,
-      startDestination = AnimeScreen.Start.name,
-      enterTransition = { EnterTransition.None },
-      exitTransition = { ExitTransition.None },
-      popEnterTransition = { EnterTransition.None },
-      popExitTransition = { ExitTransition.None },
-      modifier = Modifier
-          .fillMaxSize()
-  ) {
-      composable(route = AnimeScreen.Start.name){
-          LandingPage(
-              onLoginButtonClicked = {navController.navigate(AnimeScreen.LogIn.name)},
-              onSignButtonClicked = {navController.navigate(AnimeScreen.SignUp.name)},
-              modifier = Modifier.fillMaxSize()
-          )
-      }
-      composable(route = AnimeScreen.LogIn.name){
-          LoginAndSignUpPage(
-              title = stringResource(R.string.welcome_back),
-              description = stringResource(R.string.login_to_your_account),
-              isSignUpPage = false,
-              onButtonText = stringResource(R.string.login),
-              authSwitchMessage = stringResource(R.string.don_t_have_an_account_signup_here),
-              onBackPressed = {navController.navigateUp()},
-              onAuthSwitchClick = {navController.navigate(AnimeScreen.SignUp.name)},
-              onLoginAndSignUpButtonClicked = {navController.navigate(AnimeScreen.HomePage.name)},
-              viewModel =loginAndSignUpViewModel
-          )
-      }
-      composable(route = AnimeScreen.SignUp.name) {
-          LoginAndSignUpPage(
-              title = stringResource(id = R.string.signup),
-              description = stringResource(R.string.create_an_account),
-              isSignUpPage = true,
-              onButtonText = stringResource(id = R.string.signup),
-              authSwitchMessage = stringResource(R.string.already_have_an_account_login_here),
-              onBackPressed = {navController.navigateUp()},
-              onAuthSwitchClick = {navController.navigate(AnimeScreen.LogIn.name)},
-              onLoginAndSignUpButtonClicked = {navController.navigate(AnimeScreen.HomePage.name)},
-              viewModel = loginAndSignUpViewModel
-          )
-      }
-      composable(route = AnimeScreen.HomePage.name) {
-          HomeScreen(
-              loginAndSignUpViewModel = loginAndSignUpViewModel
-          )
-      }
-  }
+    NavHost(
+        navController = navController,
+        startDestination = AnimeScreen.Start.route,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None },
+        modifier = Modifier.fillMaxSize()
+    ) {
+        composable(route = AnimeScreen.Start.route) {
+            LandingPage(
+                onLoginButtonClicked = { navController.navigate(AnimeScreen.LogIn.route) },
+                onSignButtonClicked = { navController.navigate(AnimeScreen.SignUp.route) },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        composable(route = AnimeScreen.LogIn.route) {
+            LoginAndSignUpPage(
+                title = stringResource(R.string.welcome_back),
+                description = stringResource(R.string.login_to_your_account),
+                isSignUpPage = false,
+                onButtonText = stringResource(R.string.login),
+                authSwitchMessage = stringResource(R.string.don_t_have_an_account_signup_here),
+                onBackPressed = { navController.navigateUp() },
+                onAuthSwitchClick = { navController.navigate(AnimeScreen.SignUp.route) },
+                onLoginAndSignUpButtonClicked = { navController.navigate(AnimeScreen.HomePage.route) },
+                viewModel = loginAndSignUpViewModel
+            )
+        }
+        composable(route = AnimeScreen.SignUp.route) {
+            LoginAndSignUpPage(
+                title = stringResource(id = R.string.signup),
+                description = stringResource(R.string.create_an_account),
+                isSignUpPage = true,
+                onButtonText = stringResource(id = R.string.signup),
+                authSwitchMessage = stringResource(R.string.already_have_an_account_login_here),
+                onBackPressed = { navController.navigateUp() },
+                onAuthSwitchClick = { navController.navigate(AnimeScreen.LogIn.route) },
+                onLoginAndSignUpButtonClicked = { navController.navigate(AnimeScreen.HomePage.route) },
+                viewModel = loginAndSignUpViewModel
+            )
+        }
+        composable(route = AnimeScreen.HomePage.route) {
+            HomeScreen(onAnimeClicked = { animeId ->
+                navController.navigate("animeDetails/$animeId")
+            })
+        }
+        composable(
+            route = AnimeScreen.AnimeDetailsPage.route
+        ) { backStackEntry ->
+            val animeId = backStackEntry.arguments?.getString("animeId")?.toIntOrNull()
+            AnimeDetailsPage(
+                animeId = animeId,
+                onBackPressed = { navController.navigateUp() }
+            )
+        }
+    }
 }
+
 
 @Composable
 

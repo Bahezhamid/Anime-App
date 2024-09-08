@@ -1,8 +1,9 @@
 package com.example.animeapp.ui.navigation
 
-enum class AnimeScreen {
-    Start,
-    LogIn,
-    SignUp,
-    HomePage,
+enum class AnimeScreen(val route: String) {
+    Start("start"),
+    LogIn("login"),
+    SignUp("signup"),
+    HomePage("homePage"),
+    AnimeDetailsPage("animeDetails/{animeId}");
 }

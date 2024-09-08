@@ -52,15 +52,16 @@ import com.example.animeapp.R
 import com.example.animeapp.model.AnimeData
 import com.example.animeapp.model.Data
 import com.example.animeapp.ui.AppViewModelProvider
+import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsViewModel
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 
 @Composable
 fun HomeScreen(
-    loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    onAnimeClicked : (Int) -> Unit
 ) {
     val allAnimeData = homePageViewModel.uiState.collectAsState()
-    val loginUiState by loginAndSignUpViewModel.loginUiState.collectAsState()
+
     Scaffold(
         bottomBar = {
             AnimeBottomAppBar(
@@ -127,25 +128,6 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Row(
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        modifier = Modifier.fillMaxWidth(),
-
-                        ) {
-                        Text(text = "Action",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(text = "Drama",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(text = "Adventure",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(text = "Thriller",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                    Spacer(modifier = Modifier.weight(0.1f))
-                    Row(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -207,7 +189,10 @@ fun HomeScreen(
             }
             Text(text = "Free To Watch", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(10.dp))
-           AnimeGrid(allAnimeData = allAnimeData.value, modifier = Modifier.padding(innerPadding))
+           AnimeGrid(allAnimeData = allAnimeData.value,
+               onAnimeClicked = onAnimeClicked,
+               modifier = Modifier.padding(innerPadding)
+           )
         }
     }
 }
@@ -215,7 +200,8 @@ fun HomeScreen(
 @Composable
 fun AnimeGrid(
     allAnimeData: AnimeData?,
-    modifier: Modifier
+    modifier: Modifier,
+    onAnimeClicked : (Int) -> Unit
 ) {
 
     LazyVerticalGrid(
@@ -232,21 +218,34 @@ fun AnimeGrid(
     ) {
         allAnimeData?.data?.let {
             items(it.filterNotNull()) { anime ->
-                AnimeCard(animeTitle = anime.title, animePoster = anime.images?.jpg?.imageUrl)
+                AnimeCard(
+                    animeId = anime.malId,
+                    animeTitle = anime.title,
+                    animePoster = anime.images?.jpg?.imageUrl,
+                    onAnimeClicked = onAnimeClicked
+                    )
             }
         }
     }
 }
 @Composable
 fun AnimeCard(
+    animeId : Int?,
     animeTitle: String?,
     animePoster : String?,
+    onAnimeClicked: (Int) -> Unit
 ) {
     Column (
         modifier = Modifier
             .padding(end = 10.dp, bottom = 10.dp)
             .wrapContentHeight()
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable {
+                if (animeId != null) {
+                    onAnimeClicked(animeId)
+                }
+            }
+        ,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
 
