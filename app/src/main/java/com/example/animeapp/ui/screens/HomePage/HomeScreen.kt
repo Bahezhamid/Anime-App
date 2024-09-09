@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -58,15 +60,18 @@ import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 @Composable
 fun HomeScreen(
     homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    onAnimeClicked : (Int) -> Unit
+    onAnimeClicked : (Int) -> Unit,
+    onSavedClicked : () -> Unit,
+    modifier: Modifier = Modifier
 ) {
+
     val allAnimeData = homePageViewModel.uiState.collectAsState()
 
     Scaffold(
         bottomBar = {
             AnimeBottomAppBar(
                 onHomeClick = {},
-                onSavedClick = {},
+                onSavedClick = onSavedClicked,
                 onBookClick = {},
                 onProfileClick = {}
             )
@@ -77,125 +82,180 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.primary)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(560.dp)
-            ) {
-
-                AsyncImage(model =ImageRequest
-                    .Builder(context = LocalContext.current)
-                    .data(allAnimeData.value?.data?.first()?.images?.jpg?.largeImageUrl)
-                    .crossfade(true)
-                    .build() ,
-                    contentDescription = "poster",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(),)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
-                        .height(100.dp)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    MaterialTheme.colorScheme.primary
-                                ),
-                                startY = 0f,
-                                endY = Float.POSITIVE_INFINITY
-                            )
-                        )
+            when (homePageViewModel.uiState.collectAsState().value) {
+                is AnimeDataUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
+                is AnimeDataUiState.Success -> AllAnimeScreen(
+                    allAnimeData = (homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData,
+                    onAnimeClicked = onAnimeClicked,
+                    paddingValues = innerPadding
                 )
-                Column (modifier = Modifier.fillMaxSize()){
 
-                    Box(modifier = Modifier
-                        .padding(end = 26.dp, top = 77.dp)
-                        .align(AbsoluteAlignment.Right)
-                        .size(50.dp)
-                        .clip(RoundedCornerShape(50.dp))
-                        .clickable { },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Search,
-                            contentDescription = "Search",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(70.dp)
-                                .clip(RoundedCornerShape(20.dp))
-                                .clickable { },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add, contentDescription = "",
-                                    modifier = Modifier.size(50.dp),
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-
-                                Text(text = "My List", style = MaterialTheme.typography.bodyLarge)
-                            }
-                        }
-                        Button(
-                            onClick = { /*TODO*/ },
-                            modifier = Modifier
-                                .width(126.dp)
-                                .height(56.dp)
-                        ) {
-                            Text(text = "Play", style = MaterialTheme.typography.headlineSmall)
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(70.dp)
-                                .clip(RoundedCornerShape(30.dp))
-                                .clickable { },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = "",
-                                    modifier = Modifier.size(50.dp),
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                                Text(
-                                    text = "Info",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.weight(0.05f))
-                }
+                is AnimeDataUiState.Error -> ErrorScreen(
+                    homePageViewModel::getAnimeData,
+                    modifier = modifier.fillMaxSize()
+                )
             }
-            Text(text = "Free To Watch", style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(10.dp))
-           AnimeGrid(allAnimeData = allAnimeData.value,
-               onAnimeClicked = onAnimeClicked,
-               modifier = Modifier.padding(innerPadding)
-           )
         }
     }
 }
+@Composable
+fun LoadingScreen(modifier: Modifier = Modifier) {
+    Image(
+        modifier = modifier.size(200.dp),
+        painter = painterResource(R.drawable.loading_img),
+        contentDescription = "Loading"
+    )
+}
+
+@Composable
+fun ErrorScreen(retryAction: () -> Unit,modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_connection_error), contentDescription = ""
+        )
+        Text(text = "Loading Faild", modifier = Modifier.padding(16.dp))
+        Button(
+            onClick = retryAction,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary
+            )
+        ) {
+            Text(text = "retry")
+        }
+    }
+}
+@Composable
+fun AllAnimeScreen(
+    allAnimeData: AnimeData?,
+    onAnimeClicked: (Int) -> Unit,
+    paddingValues: PaddingValues
+) {
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(560.dp)
+        ) {
+
+            AsyncImage(model =ImageRequest
+                .Builder(context = LocalContext.current)
+                .data(allAnimeData?.data?.first()?.images?.jpg?.largeImageUrl)
+                .crossfade(true)
+                .build() ,
+                contentDescription = "poster",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
+                error = painterResource(id = R.drawable.ic_broken_image),
+                placeholder = painterResource(id = R.drawable.loading_img)
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .height(100.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.primary
+                            ),
+                            startY = 0f,
+                            endY = Float.POSITIVE_INFINITY
+                        )
+                    )
+            )
+            Column (modifier = Modifier.fillMaxSize()){
+
+                Box(modifier = Modifier
+                    .padding(end = 26.dp, top = 77.dp)
+                    .align(AbsoluteAlignment.Right)
+                    .size(50.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .clickable { },
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = "Search",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .clickable { },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add, contentDescription = "",
+                                modifier = Modifier.size(50.dp),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+
+                            Text(text = "My List", style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                    Button(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier
+                            .width(126.dp)
+                            .height(56.dp)
+                    ) {
+                        Text(text = "Play", style = MaterialTheme.typography.headlineSmall)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(RoundedCornerShape(30.dp))
+                            .clickable { },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "",
+                                modifier = Modifier.size(50.dp),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                text = "Info",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.weight(0.05f))
+            }
+        }
+        Text(text = "Free To Watch", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(10.dp))
+        AnimeGrid(allAnimeData = allAnimeData,
+            onAnimeClicked = onAnimeClicked,
+            modifier = Modifier.padding(paddingValues)
+        )
+    }
+
 
 @Composable
 fun AnimeGrid(
@@ -260,7 +320,9 @@ fun AnimeCard(
                 .heightIn(min = 120.dp, max = 190.dp)
                 .clip(RoundedCornerShape(10.dp))
             ,
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            error = painterResource(id = R.drawable.ic_broken_image),
+            placeholder = painterResource(id = R.drawable.loading_img)
         )
         Spacer(modifier = Modifier.height(5.dp))
         if (animeTitle != null) {

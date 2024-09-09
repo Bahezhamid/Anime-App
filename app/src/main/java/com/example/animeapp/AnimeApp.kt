@@ -10,10 +10,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -29,8 +34,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.animeapp.ui.AppViewModelProvider
 import com.example.animeapp.ui.navigation.AnimeScreen
 import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsPage
+import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.screens.HomePage.HomeScreen
 import com.example.animeapp.ui.screens.LandingPage
+import com.example.animeapp.ui.screens.SavedAnimePage
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpPage
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 
@@ -38,7 +45,8 @@ import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 @Composable
 fun AnimeApp(
     navController: NavHostController = rememberNavController(),
-    loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     NavHost(
         navController = navController,
@@ -85,7 +93,9 @@ fun AnimeApp(
         composable(route = AnimeScreen.HomePage.route) {
             HomeScreen(onAnimeClicked = { animeId ->
                 navController.navigate("animeDetails/$animeId")
-            })
+            },
+                onSavedClicked = {navController.navigate(AnimeScreen.SavedAnimeScreen.route)}
+            )
         }
         composable(
             route = AnimeScreen.AnimeDetailsPage.route
@@ -94,6 +104,11 @@ fun AnimeApp(
             AnimeDetailsPage(
                 animeId = animeId,
                 onBackPressed = { navController.navigateUp() }
+            )
+        }
+        composable(route = AnimeScreen.SavedAnimeScreen.route){
+            SavedAnimePage(
+                onHomeClicked = { navController.navigate(AnimeScreen.HomePage.route) }
             )
         }
     }
@@ -149,3 +164,30 @@ fun AnimeBottomAppBar(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AnimeTopAppBar (
+    title : String
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        actions = {
+            Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = "Search",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(50.dp)
+            )
+        },
+        modifier = Modifier.fillMaxWidth(),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        )
+    )
+
+}

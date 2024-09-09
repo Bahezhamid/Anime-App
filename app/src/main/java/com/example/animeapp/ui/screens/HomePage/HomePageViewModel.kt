@@ -9,20 +9,32 @@ import com.example.animeapp.model.Data
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 
+sealed interface AnimeDataUiState {
+    data class Success(val animeData: AnimeData?) : AnimeDataUiState
+    object Error : AnimeDataUiState
+    object Loading : AnimeDataUiState
+}
 class HomePageViewModel(private val animeDataRepository: AnimeDataRepository) : ViewModel(){
-    private var _uiState = MutableStateFlow<AnimeData?>(null)
+    private var _uiState = MutableStateFlow<AnimeDataUiState>(AnimeDataUiState.Loading)
     val uiState get() = _uiState.asStateFlow()
     init {
         getAnimeData()
     }
-    private fun getAnimeData() {
+     fun getAnimeData() {
         viewModelScope.launch {
-            try {
-              _uiState.value =animeDataRepository.getAnimeData(3)
-            } catch (e: Exception) {
-                Log.e("HomePageViewModel", "Error fetching data", e)
-                _uiState.value = null
+            _uiState.value = AnimeDataUiState.Loading
+            _uiState.value = try {
+                val result = animeDataRepository.getAnimeData(3)
+                AnimeDataUiState.Success(
+                    result
+                )
+            } catch (e: IOException) {
+                AnimeDataUiState.Error
+            } catch (e: HttpException) {
+                AnimeDataUiState.Error
             }
         }
     }

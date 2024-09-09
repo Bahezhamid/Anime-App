@@ -1,7 +1,7 @@
 package com.example.animeapp.ui.screens.AnimeDetailsPage
 
 import android.util.Log
-import androidx.compose.foundation.Image
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -52,7 +52,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.animeapp.R
+import com.example.animeapp.model.AnimeDataById
 import com.example.animeapp.ui.AppViewModelProvider
+import com.example.animeapp.ui.screens.HomePage.AnimeDataUiState
+import com.example.animeapp.ui.screens.HomePage.ErrorScreen
+import com.example.animeapp.ui.screens.HomePage.LoadingScreen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,160 +71,184 @@ fun AnimeDetailsPage(
             animeDetailsViewModel.getAnimeDataById(it)
         }
     }
-    Log.d("animeId",animeId.toString())
-
-   val allAnimeDetails = animeDetailsViewModel.animeDataByIdUiState.collectAsState()
-    val genresList = allAnimeDetails.value?.data?.genres?.map { it.name } ?: emptyList()
-    val genresText = genresList.joinToString(separator = ", ")
-    Column (
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.primary)
             .padding(horizontal = 19.dp),
-    ){
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        when (animeDetailsViewModel.animeDataByIdUiState.collectAsState().value) {
+            is AnimeDetailsUiState.Loading -> LoadingScreen(modifier = Modifier.fillMaxSize())
+            is AnimeDetailsUiState.Error -> ErrorScreen(
+                retryAction = {
+                    if (animeId != null) {
+                        animeDetailsViewModel.getAnimeDataById(animeId)
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
 
-
-        TopAppBar(
-            title = { },
-            navigationIcon = {
-                IconButton(onClick = onBackPressed) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "",
-                        tint = Color.White
+            is AnimeDetailsUiState.Success ->
+                AnimeDetailsScreen(allAnimeDetails =
+                (animeDetailsViewModel.animeDataByIdUiState.collectAsState()
+                    .value as AnimeDetailsUiState.Success).animeDetails,
+                    onBackPressed =onBackPressed
                     )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            )
-            )
-        Spacer(modifier = Modifier.height(16.dp))
-        val animePoster = (allAnimeDetails.value?.data?.trailer?.images?.largeImageUrl
-            ?.takeIf { it.isNotBlank() }
-            ?: allAnimeDetails.value?.data?.images?.jpg?.largeImageUrl)
-            AsyncImage(
-                model = ImageRequest
-                    .Builder(context = LocalContext.current)
-                    .data(animePoster)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "poster",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 120.dp, max = 198.dp)
-                    .clip(RoundedCornerShape(10.dp)),
-                contentScale = ContentScale.Crop
-            )
-
-        Spacer(modifier = Modifier.height(15.dp))
-
-        allAnimeDetails.value?.data?.titleEnglish?.let {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Row (
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ){
-            Text(
-                text = "About Anime",
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
-            )
-        }
-        Spacer(modifier = Modifier.height(5.dp))
-        Column(
-            modifier = Modifier
-                .heightIn(max = 350.dp)
-                .shadow(
-                    elevation = 10.dp,
-                    shape = RoundedCornerShape(12.dp),
-                    clip = false
-                )
-                .clip(RoundedCornerShape(20.dp))
-                .verticalScroll(rememberScrollState())
-                .background(
-                    MaterialTheme.colorScheme.secondary
-                )
-                .padding(10.dp),
-        ) {
 
-            Text(
-                text = "Released Date: ${extractYearFromDate(allAnimeDetails.value?.data?.aired?.from)}",
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.height(3.dp))
-            Text(
-                text = "Popularity Rank: ${allAnimeDetails.value?.data?.popularity}",
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.height(3.dp))
-            Text(
-                text = "Global Ranked: ${allAnimeDetails.value?.data?.rank}",
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.height(3.dp))
-            Text(
-                text = "Genre: $genresText",
-                color = MaterialTheme.colorScheme.onPrimary,
-            )
-            Spacer(modifier = Modifier.height(3.dp))
-            Text(
-                text = "Episodes:${allAnimeDetails.value?.data?.episodes}(${allAnimeDetails.value?.data?.duration})",
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.height(3.dp))
-            Text(
-                text = "Description:",
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-
-            allAnimeDetails.value?.data?.synopsis?.let {
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = androidx.compose.ui.text.TextStyle(
-
-                        lineHeight = 22.sp,
-                        textAlign = TextAlign.Start,
-                    )
-                )
-            }
-
-        }
-        Spacer(modifier = Modifier.height(15.dp))
-        Button(
-            onClick = { /*TODO*/ },
-            modifier = Modifier
-                .width(200.dp)
-                .height(80.dp)
-                .align(Alignment.CenterHorizontally),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary
-            ),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Text(text = "Play", style = MaterialTheme.typography.headlineSmall)
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-           IconsFunction(imageVector = Icons.Default.Add, iconName = "Add")
-            IconsFunction(imageVector = Icons.Default.Share, iconName = "Share")
-        }
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AnimeDetailsScreen(
+    allAnimeDetails : AnimeDataById?,
+    onBackPressed: () -> Unit
+) {
+    val genresList = allAnimeDetails?.data?.genres?.map { it.name } ?: emptyList()
+    val genresText = genresList.joinToString(separator = ", ")
+    TopAppBar(
+        title = { },
+        navigationIcon = {
+            IconButton(onClick = onBackPressed) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "",
+                    tint = Color.White
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        )
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    val animePoster = (allAnimeDetails?.data?.trailer?.images?.largeImageUrl
+        ?.takeIf { it.isNotBlank() }
+        ?: allAnimeDetails?.data?.images?.jpg?.largeImageUrl)
+    AsyncImage(
+        model = ImageRequest
+            .Builder(context = LocalContext.current)
+            .data(animePoster)
+            .crossfade(true)
+            .build(),
+        contentDescription = "poster",
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 120.dp, max = 198.dp)
+            .clip(RoundedCornerShape(10.dp)),
+        contentScale = ContentScale.Crop,
+        error = painterResource(id = R.drawable.ic_broken_image),
+        placeholder = painterResource(id = R.drawable.loading_img)
+    )
 
+    Spacer(modifier = Modifier.height(15.dp))
+
+    allAnimeDetails?.data?.titleEnglish?.let {
+        Text(
+            text = it,
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+    Row (
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ){
+        Text(
+            text = "About Anime",
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center
+        )
+    }
+    Spacer(modifier = Modifier.height(5.dp))
+    Column(
+        modifier = Modifier
+            .heightIn(max = 350.dp)
+            .shadow(
+                elevation = 10.dp,
+                shape = RoundedCornerShape(12.dp),
+                clip = false
+            )
+            .clip(RoundedCornerShape(20.dp))
+            .verticalScroll(rememberScrollState())
+            .background(
+                MaterialTheme.colorScheme.secondary
+            )
+            .padding(10.dp),
+    ) {
+
+        Text(
+            text = "Released Date: ${extractYearFromDate(allAnimeDetails?.data?.aired?.from)}",
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Spacer(modifier = Modifier.height(3.dp))
+        Text(
+            text = "Popularity Rank: ${allAnimeDetails?.data?.popularity}",
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Spacer(modifier = Modifier.height(3.dp))
+        Text(
+            text = "Global Ranked: ${allAnimeDetails?.data?.rank}",
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Spacer(modifier = Modifier.height(3.dp))
+        Text(
+            text = "Genre: $genresText",
+            color = MaterialTheme.colorScheme.onPrimary,
+        )
+        Spacer(modifier = Modifier.height(3.dp))
+        Text(
+            text = "Episodes:${allAnimeDetails?.data?.episodes}(${allAnimeDetails?.data?.duration})",
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Spacer(modifier = Modifier.height(3.dp))
+        Text(
+            text = "Description:",
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+
+        allAnimeDetails?.data?.synopsis?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.onPrimary,
+                style = androidx.compose.ui.text.TextStyle(
+
+                    lineHeight = 22.sp,
+                    textAlign = TextAlign.Start,
+                )
+            )
+        }
+
+    }
+    Spacer(modifier = Modifier.height(15.dp))
+    Button(
+        onClick = { /*TODO*/ },
+        modifier = Modifier
+            .width(200.dp)
+            .height(80.dp)
+        ,
+
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            contentColor = MaterialTheme.colorScheme.onSecondary
+        ),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Text(text = "Play", style = MaterialTheme.typography.headlineSmall)
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        IconsFunction(imageVector = Icons.Default.Add, iconName = "Add")
+        IconsFunction(imageVector = Icons.Default.Share, iconName = "Share")
+    }
+}
 
 @Composable
 fun IconsFunction(
