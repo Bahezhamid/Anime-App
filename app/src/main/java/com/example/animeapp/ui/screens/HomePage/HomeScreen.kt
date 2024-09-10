@@ -62,6 +62,7 @@ fun HomeScreen(
     homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onAnimeClicked : (Int) -> Unit,
     onSavedClicked : () -> Unit,
+    onBookClicked : () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -72,7 +73,7 @@ fun HomeScreen(
             AnimeBottomAppBar(
                 onHomeClick = {},
                 onSavedClick = onSavedClicked,
-                onBookClick = {},
+                onBookClick = onBookClicked,
                 onProfileClick = {}
             )
         }

@@ -2,9 +2,11 @@ package com.example.animeapp.data
 
 import android.content.Context
 import com.example.animeapp.network.AnimeApiService
+import okhttp3.OkHttpClient
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 
 interface AppContainer {
@@ -16,9 +18,14 @@ class AppDataContainer(private val context: Context) : AppContainer {
     override val animeRepository: AnimeRepository by lazy {
         OfflineAnimeRepository(AnimeDatabase.getDatabase(context).animeDao())
     }
-
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .build()
     private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(baseUrl)
+        .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

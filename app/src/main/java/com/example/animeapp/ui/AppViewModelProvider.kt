@@ -7,7 +7,9 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.animeapp.AnimeApplication
+import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimeViewScreenModel
 import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsViewModel
+import com.example.animeapp.ui.screens.HomePage.AllAnimeScreen
 import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
@@ -24,6 +26,9 @@ object AppViewModelProvider {
         }
         initializer {
             AnimeDetailsViewModel(animeApplication().container.animeDataRepository)
+        }
+        initializer {
+            AllAnimeViewScreenModel(animeApplication().container.animeDataRepository)
         }
     }
 }

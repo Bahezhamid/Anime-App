@@ -37,7 +37,8 @@ import com.example.animeapp.R
 
 @Composable
 fun SavedAnimePage (
-    onHomeClicked : () -> Unit
+    onHomeClicked : () -> Unit,
+    onBookClicked : () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -47,7 +48,7 @@ fun SavedAnimePage (
             AnimeBottomAppBar(
                 onHomeClick = onHomeClicked,
                 onSavedClick = {},
-                onBookClick = {},
+                onBookClick = onBookClicked,
                 onProfileClick = {}
             )
         }

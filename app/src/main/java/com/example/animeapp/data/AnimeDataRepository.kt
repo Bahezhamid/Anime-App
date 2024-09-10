@@ -1,5 +1,6 @@
 package com.example.animeapp.data
 
+import com.example.animeapp.model.AllGenres
 import com.example.animeapp.model.AnimeData
 import com.example.animeapp.model.AnimeDataById
 import com.example.animeapp.model.Data
@@ -9,6 +10,7 @@ import com.example.animeapp.network.AnimeApiService
 interface AnimeDataRepository {
     suspend fun getAnimeData(pages: Int): AnimeData?
     suspend fun getAnimeDataById(id : Int) : AnimeDataById?
+    suspend fun getAllGenres() : AllGenres?
 }
 
 class NetworkAnimeDataRepository(
@@ -30,4 +32,5 @@ class NetworkAnimeDataRepository(
     }
 
     override suspend fun getAnimeDataById(id: Int): AnimeDataById? = animeApiService.getAnimeDataById(id)
+    override suspend fun getAllGenres(): AllGenres? = animeApiService.getAllGenres()
 }

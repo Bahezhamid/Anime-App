@@ -33,6 +33,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.animeapp.ui.AppViewModelProvider
 import com.example.animeapp.ui.navigation.AnimeScreen
+import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimePage
+import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimeScreen
 import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsPage
 import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.screens.HomePage.HomeScreen
@@ -94,7 +96,8 @@ fun AnimeApp(
             HomeScreen(onAnimeClicked = { animeId ->
                 navController.navigate("animeDetails/$animeId")
             },
-                onSavedClicked = {navController.navigate(AnimeScreen.SavedAnimeScreen.route)}
+                onSavedClicked = {navController.navigate(AnimeScreen.SavedAnimeScreen.route)},
+                onBookClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)}
             )
         }
         composable(
@@ -108,7 +111,17 @@ fun AnimeApp(
         }
         composable(route = AnimeScreen.SavedAnimeScreen.route){
             SavedAnimePage(
-                onHomeClicked = { navController.navigate(AnimeScreen.HomePage.route) }
+                onHomeClicked = { navController.navigate(AnimeScreen.HomePage.route) },
+                onBookClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)}
+            )
+        }
+        composable(route = AnimeScreen.AllAnimeScreen.route) {
+            AllAnimePage(
+                onHomeButtonClicked = {navController.navigate(AnimeScreen.HomePage.route)},
+                onSavedButton = {navController.navigate(AnimeScreen.SavedAnimeScreen.route)},
+                onAnimeClicked = {animeId->
+                    navController.navigate("animeDetails/$animeId")
+                }
             )
         }
     }
