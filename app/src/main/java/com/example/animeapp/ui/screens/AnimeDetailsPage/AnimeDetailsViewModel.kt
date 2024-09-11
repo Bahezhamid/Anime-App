@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.animeapp.data.AnimeDataRepository
+import com.example.animeapp.model.AnimeCharacters
 import com.example.animeapp.model.AnimeDataById
 import com.example.animeapp.ui.screens.HomePage.AnimeDataUiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 sealed interface AnimeDetailsUiState {
-    data class Success(val animeDetails : AnimeDataById?) : AnimeDetailsUiState
+    data class Success(val animeDetails : AnimeDataById?, val animeCharacters: AnimeCharacters?) : AnimeDetailsUiState
     object Error : AnimeDetailsUiState
     object Loading : AnimeDetailsUiState
 }
@@ -23,16 +24,23 @@ class AnimeDetailsViewModel (private val animeDataRepository: AnimeDataRepositor
     fun getAnimeDataById(id : Int) {
         viewModelScope.launch {
             _animeDataByIdUiState.value = AnimeDetailsUiState.Loading
-            _animeDataByIdUiState.value = try {
-                val result = animeDataRepository.getAnimeDataById(id = id)
-                AnimeDetailsUiState.Success(
-                    result
+            try {
+                val animeDetails = animeDataRepository.getAnimeDataById(id)
+                val animeCharacters = animeDataRepository.getAllCharacters(id)
+
+                _animeDataByIdUiState.value = AnimeDetailsUiState.Success(
+                    animeDetails = animeDetails,
+                    animeCharacters = animeCharacters
                 )
             } catch (e: IOException) {
-                AnimeDetailsUiState.Error
+                Log.e("AnimeDetailsViewModel", "IOException while fetching anime data: ${e.message}")
+                _animeDataByIdUiState.value = AnimeDetailsUiState.Error
             } catch (e: HttpException) {
-                AnimeDetailsUiState.Error
+                Log.e("AnimeDetailsViewModel", "HttpException while fetching anime data: ${e.message}")
+                _animeDataByIdUiState.value = AnimeDetailsUiState.Error
             }
         }
+
     }
+
 }

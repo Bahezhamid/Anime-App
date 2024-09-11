@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,7 +18,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -52,8 +56,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.animeapp.R
+import com.example.animeapp.model.AnimeCharacters
 import com.example.animeapp.model.AnimeDataById
 import com.example.animeapp.ui.AppViewModelProvider
+import com.example.animeapp.ui.screens.AllAnimeScreen.GenreChip
 import com.example.animeapp.ui.screens.HomePage.AnimeDataUiState
 import com.example.animeapp.ui.screens.HomePage.ErrorScreen
 import com.example.animeapp.ui.screens.HomePage.LoadingScreen
@@ -71,11 +77,11 @@ fun AnimeDetailsPage(
             animeDetailsViewModel.getAnimeDataById(it)
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.primary)
-            .padding(horizontal = 19.dp),
+            .background(color = MaterialTheme.colorScheme.primary),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when (animeDetailsViewModel.animeDataByIdUiState.collectAsState().value) {
@@ -93,6 +99,8 @@ fun AnimeDetailsPage(
                 AnimeDetailsScreen(allAnimeDetails =
                 (animeDetailsViewModel.animeDataByIdUiState.collectAsState()
                     .value as AnimeDetailsUiState.Success).animeDetails,
+                    animeCharacters = (animeDetailsViewModel.animeDataByIdUiState.collectAsState()
+                        .value as AnimeDetailsUiState.Success).animeCharacters,
                     onBackPressed =onBackPressed
                     )
         }
@@ -103,6 +111,7 @@ fun AnimeDetailsPage(
 @Composable
 fun AnimeDetailsScreen(
     allAnimeDetails : AnimeDataById?,
+    animeCharacters : AnimeCharacters?,
     onBackPressed: () -> Unit
 ) {
     val genresList = allAnimeDetails?.data?.genres?.map { it.name } ?: emptyList()
@@ -120,7 +129,8 @@ fun AnimeDetailsScreen(
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primary
-        )
+        ),
+        modifier = Modifier.padding(horizontal = 19.dp),
     )
     Spacer(modifier = Modifier.height(16.dp))
     val animePoster = (allAnimeDetails?.data?.trailer?.images?.largeImageUrl
@@ -134,6 +144,7 @@ fun AnimeDetailsScreen(
             .build(),
         contentDescription = "poster",
         modifier = Modifier
+            .padding(horizontal = 19.dp)
             .fillMaxWidth()
             .heightIn(min = 120.dp, max = 198.dp)
             .clip(RoundedCornerShape(10.dp)),
@@ -153,7 +164,7 @@ fun AnimeDetailsScreen(
     }
     Spacer(modifier = Modifier.height(16.dp))
     Row (
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.padding(horizontal = 19.dp).fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ){
         Text(
@@ -165,7 +176,8 @@ fun AnimeDetailsScreen(
     Spacer(modifier = Modifier.height(5.dp))
     Column(
         modifier = Modifier
-            .heightIn(max = 350.dp)
+            .padding(horizontal = 19.dp)
+            .heightIn(max = 250.dp)
             .shadow(
                 elevation = 10.dp,
                 shape = RoundedCornerShape(12.dp),
@@ -176,7 +188,7 @@ fun AnimeDetailsScreen(
             .background(
                 MaterialTheme.colorScheme.secondary
             )
-            .padding(10.dp),
+            .padding(10.dp)
     ) {
 
         Text(
@@ -222,10 +234,23 @@ fun AnimeDetailsScreen(
         }
 
     }
+    Spacer(modifier = Modifier.height(10.dp))
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        animeCharacters?.data?.let {
+            items(it.filterNotNull()) { character ->
+                CharacterCard(characterImage = character.character?.images?.jpg?.imageUrl)
+            }
+        }
+    }
     Spacer(modifier = Modifier.height(15.dp))
     Button(
         onClick = { /*TODO*/ },
         modifier = Modifier
+            .padding(horizontal = 19.dp)
             .width(200.dp)
             .height(80.dp)
         ,
@@ -241,6 +266,7 @@ fun AnimeDetailsScreen(
     Spacer(modifier = Modifier.height(16.dp))
     Row(
         modifier = Modifier
+            .padding(horizontal = 19.dp)
             .fillMaxWidth()
             .height(80.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -280,6 +306,33 @@ fun IconsFunction(
         }
     }
 }
+@Composable
+fun CharacterCard(
+    characterImage: String?,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = Modifier
+            .size(80.dp)
+            .clip(CircleShape)
+            .background(Color.LightGray)
+    ) {
+        AsyncImage(
+            model = ImageRequest
+                .Builder(context = LocalContext.current)
+                .data(characterImage)
+                .crossfade(true)
+                .build(),
+            contentDescription = "Character Image",
+            modifier = Modifier
+                .fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            error = painterResource(id = R.drawable.ic_broken_image),
+            placeholder = painterResource(id = R.drawable.loading_img)
+        )
+    }
+}
+
 fun extractYearFromDate(dateString: String?): String {
     return dateString?.takeIf { it.length >= 4 }?.substring(0, 4) ?: ""
 }
