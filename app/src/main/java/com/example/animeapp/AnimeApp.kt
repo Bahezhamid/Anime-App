@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +24,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -190,8 +193,12 @@ fun AnimeBottomAppBar(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnimeTopAppBar (
-    title : String
+
+fun AnimeTopAppBar(
+    title: String,
+    isBackButton: Boolean = false,
+    onBackButtonClicked : () -> Unit ={},
+    backGroundColor : Color = MaterialTheme.colorScheme.primary,
 ) {
     TopAppBar(
         title = {
@@ -200,18 +207,31 @@ fun AnimeTopAppBar (
                 style = MaterialTheme.typography.headlineSmall
             )
         },
+        navigationIcon = {
+            if (isBackButton) {
+                IconButton(onClick = onBackButtonClicked) {
+                    Icon(
+                        imageVector = Icons.Outlined.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        },
         actions = {
+            if(!isBackButton){
             Icon(
                 imageVector = Icons.Outlined.Search,
                 contentDescription = "Search",
                 tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(50.dp)
             )
+                }
         },
         modifier = Modifier.fillMaxWidth(),
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = backGroundColor
         )
     )
-
 }
+

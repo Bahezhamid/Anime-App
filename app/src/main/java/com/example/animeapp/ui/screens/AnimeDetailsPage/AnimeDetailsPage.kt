@@ -34,6 +34,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -55,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.animeapp.AnimeTopAppBar
 import com.example.animeapp.R
 import com.example.animeapp.model.AnimeCharacters
 import com.example.animeapp.model.AnimeDataById
@@ -63,6 +65,7 @@ import com.example.animeapp.ui.screens.AllAnimeScreen.GenreChip
 import com.example.animeapp.ui.screens.HomePage.AnimeDataUiState
 import com.example.animeapp.ui.screens.HomePage.ErrorScreen
 import com.example.animeapp.ui.screens.HomePage.LoadingScreen
+import kotlin.math.truncate
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,34 +80,45 @@ fun AnimeDetailsPage(
             animeDetailsViewModel.getAnimeDataById(it)
         }
     }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.primary),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        when (animeDetailsViewModel.animeDataByIdUiState.collectAsState().value) {
-            is AnimeDetailsUiState.Loading -> LoadingScreen(modifier = Modifier.fillMaxSize())
-            is AnimeDetailsUiState.Error -> ErrorScreen(
-                retryAction = {
-                    if (animeId != null) {
-                        animeDetailsViewModel.getAnimeDataById(animeId)
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
+    Scaffold (
+        topBar = {
+            AnimeTopAppBar(
+                title = "",
+                isBackButton = true,
+                onBackButtonClicked = onBackPressed
             )
-
-            is AnimeDetailsUiState.Success ->
-                AnimeDetailsScreen(allAnimeDetails =
-                (animeDetailsViewModel.animeDataByIdUiState.collectAsState()
-                    .value as AnimeDetailsUiState.Success).animeDetails,
-                    animeCharacters = (animeDetailsViewModel.animeDataByIdUiState.collectAsState()
-                        .value as AnimeDetailsUiState.Success).animeCharacters,
-                    onBackPressed =onBackPressed
-                    )
         }
+    ){ innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.primary),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            when (animeDetailsViewModel.animeDataByIdUiState.collectAsState().value) {
+                is AnimeDetailsUiState.Loading -> LoadingScreen(modifier = Modifier.fillMaxSize())
+                is AnimeDetailsUiState.Error -> ErrorScreen(
+                    retryAction = {
+                        if (animeId != null) {
+                            animeDetailsViewModel.getAnimeDataById(animeId)
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
 
+                is AnimeDetailsUiState.Success ->
+                    AnimeDetailsScreen(
+                        allAnimeDetails =
+                        (animeDetailsViewModel.animeDataByIdUiState.collectAsState()
+                            .value as AnimeDetailsUiState.Success).animeDetails,
+                        animeCharacters = (animeDetailsViewModel.animeDataByIdUiState.collectAsState()
+                            .value as AnimeDetailsUiState.Success).animeCharacters,
+                        onBackPressed = onBackPressed
+                    )
+            }
+
+        }
     }
 }
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,22 +130,7 @@ fun AnimeDetailsScreen(
 ) {
     val genresList = allAnimeDetails?.data?.genres?.map { it.name } ?: emptyList()
     val genresText = genresList.joinToString(separator = ", ")
-    TopAppBar(
-        title = { },
-        navigationIcon = {
-            IconButton(onClick = onBackPressed) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "",
-                    tint = Color.White
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary
-        ),
-        modifier = Modifier.padding(horizontal = 19.dp),
-    )
+
     Spacer(modifier = Modifier.height(16.dp))
     val animePoster = (allAnimeDetails?.data?.trailer?.images?.largeImageUrl
         ?.takeIf { it.isNotBlank() }
@@ -164,7 +163,9 @@ fun AnimeDetailsScreen(
     }
     Spacer(modifier = Modifier.height(16.dp))
     Row (
-        modifier = Modifier.padding(horizontal = 19.dp).fillMaxWidth(),
+        modifier = Modifier
+            .padding(horizontal = 19.dp)
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ){
         Text(
