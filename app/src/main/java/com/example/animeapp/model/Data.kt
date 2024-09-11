@@ -80,4 +80,10 @@ data class Data(
     val count: Int? = null,
     @SerializedName("name")
     val name: String? = null,
+    @SerializedName("character")
+    val character: Character? = Character(),
+    @SerializedName("role")
+    val role: String? = "",
+    @SerializedName("voice_actors")
+    val voiceActors: List<VoiceActor>? = listOf()
 )

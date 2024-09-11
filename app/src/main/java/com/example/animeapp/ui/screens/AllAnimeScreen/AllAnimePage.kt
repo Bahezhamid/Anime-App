@@ -44,7 +44,9 @@ fun AllAnimePage(
     allAnimeViewScreenModel: AllAnimeViewScreenModel = viewModel(factory = AppViewModelProvider.Factory),
     onHomeButtonClicked : () -> Unit,
     onSavedButton : () -> Unit,
+    onProfileClicked : () -> Unit,
     onAnimeClicked : (Int) -> Unit
+
 ) {
     val allGenresUiState by allAnimeViewScreenModel.allGenresUiState.collectAsState()
     val allSelectedAnimeByGenreState by allAnimeViewScreenModel.allSelectedAnimeByGenre.collectAsState()
@@ -57,7 +59,7 @@ fun AllAnimePage(
                 onHomeClick = onHomeButtonClicked,
                 onSavedClick = onSavedButton,
                 onBookClick = {},
-                onProfileClick = {}
+                onProfileClick = onProfileClicked
             )
         }
     ) { innerPadding ->

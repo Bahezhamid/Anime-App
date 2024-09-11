@@ -32,6 +32,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.animeapp.ui.AppViewModelProvider
+import com.example.animeapp.ui.ProfilePage
 import com.example.animeapp.ui.navigation.AnimeScreen
 import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimePage
 import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimeScreen
@@ -97,7 +98,8 @@ fun AnimeApp(
                 navController.navigate("animeDetails/$animeId")
             },
                 onSavedClicked = {navController.navigate(AnimeScreen.SavedAnimeScreen.route)},
-                onBookClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)}
+                onBookClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)},
+                onProfileClicked = {navController.navigate(AnimeScreen.ProfilePage.route)}
             )
         }
         composable(
@@ -112,16 +114,25 @@ fun AnimeApp(
         composable(route = AnimeScreen.SavedAnimeScreen.route){
             SavedAnimePage(
                 onHomeClicked = { navController.navigate(AnimeScreen.HomePage.route) },
-                onBookClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)}
+                onBookClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)},
+                onProfileClicked = {navController.navigate(AnimeScreen.ProfilePage.route)}
             )
         }
         composable(route = AnimeScreen.AllAnimeScreen.route) {
             AllAnimePage(
                 onHomeButtonClicked = {navController.navigate(AnimeScreen.HomePage.route)},
                 onSavedButton = {navController.navigate(AnimeScreen.SavedAnimeScreen.route)},
+                onProfileClicked = {navController.navigate(AnimeScreen.ProfilePage.route)},
                 onAnimeClicked = {animeId->
                     navController.navigate("animeDetails/$animeId")
                 }
+            )
+        }
+        composable(route = AnimeScreen.ProfilePage.route) {
+            ProfilePage(
+                onHomeClicked = {navController.navigate(AnimeScreen.HomePage.route)},
+                onSavedClicked =  {navController.navigate(AnimeScreen.SavedAnimeScreen.route)},
+                onBookClicked =  {navController.navigate(AnimeScreen.AllAnimeScreen.route)},
             )
         }
     }

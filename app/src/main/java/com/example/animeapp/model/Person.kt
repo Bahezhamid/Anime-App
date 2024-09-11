@@ -3,13 +3,13 @@ package com.example.animeapp.model
 
 import com.google.gson.annotations.SerializedName
 
-data class Trailer(
-    @SerializedName("embed_url")
-    val embedUrl: String? = "",
+data class Person(
     @SerializedName("images")
     val images: Images? = Images(),
+    @SerializedName("mal_id")
+    val malId: Int? = 0,
+    @SerializedName("name")
+    val name: String? = "",
     @SerializedName("url")
-    val url: String? = "",
-    @SerializedName("youtube_id")
-    val youtubeId: String? = ""
+    val url: String? = ""
 )

@@ -63,6 +63,7 @@ fun HomeScreen(
     onAnimeClicked : (Int) -> Unit,
     onSavedClicked : () -> Unit,
     onBookClicked : () -> Unit,
+    onProfileClicked : () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -74,7 +75,7 @@ fun HomeScreen(
                 onHomeClick = {},
                 onSavedClick = onSavedClicked,
                 onBookClick = onBookClicked,
-                onProfileClick = {}
+                onProfileClick = onProfileClicked
             )
         }
     ) { innerPadding ->

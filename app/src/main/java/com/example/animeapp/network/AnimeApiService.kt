@@ -15,4 +15,5 @@ interface AnimeApiService {
     suspend fun getAnimeDataById(@Path("id") id : Int) : AnimeDataById?
     @GET("genres/anime")
     suspend fun getAllGenres() :  AllGenres?
+
 }

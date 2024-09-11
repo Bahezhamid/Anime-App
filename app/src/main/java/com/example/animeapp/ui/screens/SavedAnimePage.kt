@@ -38,7 +38,8 @@ import com.example.animeapp.R
 @Composable
 fun SavedAnimePage (
     onHomeClicked : () -> Unit,
-    onBookClicked : () -> Unit
+    onBookClicked : () -> Unit,
+    onProfileClicked : () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -49,7 +50,7 @@ fun SavedAnimePage (
                 onHomeClick = onHomeClicked,
                 onSavedClick = {},
                 onBookClick = onBookClicked,
-                onProfileClick = {}
+                onProfileClick = onProfileClicked
             )
         }
     ) { innerPadding ->
