@@ -5,6 +5,7 @@ import com.example.animeapp.model.AnimeChapters
 import com.example.animeapp.model.AnimeCharacters
 import com.example.animeapp.model.AnimeData
 import com.example.animeapp.model.AnimeDataById
+import com.example.animeapp.model.CharactersAllData
 import com.example.animeapp.model.Data
 import com.example.animeapp.network.AnimeApiService
 
@@ -14,7 +15,8 @@ interface AnimeDataRepository {
     suspend fun getAnimeDataById(id : Int) : AnimeDataById?
     suspend fun getAllGenres() : AllGenres?
     suspend fun getAllCharacters(id : Int) : AnimeCharacters?
-    suspend fun getAnimeChapters(id : Int) : AnimeChapters?
+    suspend fun getAnimeChapters(id : Int, page: Int) : AnimeChapters?
+    suspend fun getAllCharactersData(id : Int) : CharactersAllData
 }
 
 class NetworkAnimeDataRepository(
@@ -38,5 +40,6 @@ class NetworkAnimeDataRepository(
     override suspend fun getAnimeDataById(id: Int): AnimeDataById? = animeApiService.getAnimeDataById(id)
     override suspend fun getAllGenres(): AllGenres? = animeApiService.getAllGenres()
     override suspend fun getAllCharacters(id: Int): AnimeCharacters? = animeApiService.getCharacters(id = id)
-    override suspend fun getAnimeChapters(id: Int): AnimeChapters? = animeApiService.getAnimeChapters(id = id)
+    override suspend fun getAnimeChapters(id: Int, page: Int): AnimeChapters = animeApiService.getAnimeChapters(id = id,page = page)
+    override suspend fun getAllCharactersData(id: Int): CharactersAllData =animeApiService.getCharactersData(id= id)
 }

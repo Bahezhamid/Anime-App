@@ -39,6 +39,7 @@ import com.example.animeapp.ui.ProfilePage
 import com.example.animeapp.ui.navigation.AnimeScreen
 import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimePage
 import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimeScreen
+import com.example.animeapp.ui.screens.AnimeChapterScreen.AnimeChaptersScreen
 import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsPage
 import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.screens.HomePage.HomeScreen
@@ -97,12 +98,19 @@ fun AnimeApp(
             )
         }
         composable(route = AnimeScreen.HomePage.route) {
-            HomeScreen(onAnimeClicked = { animeId ->
+            HomeScreen(
+                onAnimeClicked = { animeId ->
                 navController.navigate("animeDetails/$animeId")
             },
+                onPlayButtonClicked = {animeId ->
+                    navController.navigate("animeChaptersScreen/$animeId")
+                },
                 onSavedClicked = {navController.navigate(AnimeScreen.SavedAnimeScreen.route)},
                 onBookClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)},
-                onProfileClicked = {navController.navigate(AnimeScreen.ProfilePage.route)}
+                onProfileClicked = {navController.navigate(AnimeScreen.ProfilePage.route)},
+                onInfoButtonClicked = {animeId ->
+                    navController.navigate("animeDetails/$animeId")
+                }
             )
         }
         composable(
@@ -111,7 +119,10 @@ fun AnimeApp(
             val animeId = backStackEntry.arguments?.getString("animeId")?.toIntOrNull()
             AnimeDetailsPage(
                 animeId = animeId,
-                onBackPressed = { navController.navigateUp() }
+                onBackPressed = { navController.navigateUp() },
+                onPlayButtonClicked = {id ->
+                    navController.navigate("animeChaptersScreen/$id")
+                }
             )
         }
         composable(route = AnimeScreen.SavedAnimeScreen.route){
@@ -131,6 +142,16 @@ fun AnimeApp(
                 }
             )
         }
+        composable(route = AnimeScreen.AnimeChaptersScreen.route) {
+                backStackEntry ->
+            val animeId = backStackEntry.arguments?.getString("animeId")?.toIntOrNull()
+            if (animeId != null) {
+                AnimeChaptersScreen(
+                    animeId = animeId,
+                    onBackButtonClicked = { navController.navigateUp() }
+                )
+            }
+        }
         composable(route = AnimeScreen.ProfilePage.route) {
             ProfilePage(
                 onHomeClicked = {navController.navigate(AnimeScreen.HomePage.route)},
@@ -138,6 +159,7 @@ fun AnimeApp(
                 onBookClicked =  {navController.navigate(AnimeScreen.AllAnimeScreen.route)},
             )
         }
+
     }
 }
 

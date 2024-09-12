@@ -22,14 +22,16 @@ class AnimeChaptersViewModel (private val animeDataRepository: AnimeDataReposito
 
     private var _animeChaptersUiState = MutableStateFlow<AnimeChaptersUiState>(AnimeChaptersUiState.Loading)
     val animeChaptersUiState get() = _animeChaptersUiState.asStateFlow()
-    init {
-        getAllChapters(1)
+    private val _currentPage = MutableStateFlow(1)
+    val currentPage = _currentPage
+    fun updateCurrentPage(currentPage  : Int) {
+        _currentPage.value = currentPage
     }
-    fun getAllChapters(id  :Int) {
+    fun getAllChapters(id  :Int, page : Int) {
         viewModelScope.launch {
             _animeChaptersUiState.value = AnimeChaptersUiState.Loading
             _animeChaptersUiState.value = try {
-                val result = animeDataRepository.getAnimeChapters(id)
+                val result = animeDataRepository.getAnimeChapters(id=id,page=page)
                 Log.d("animeData", result.toString())
                 AnimeChaptersUiState.Success(result)
 

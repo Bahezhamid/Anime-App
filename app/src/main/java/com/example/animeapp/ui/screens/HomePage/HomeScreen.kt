@@ -64,6 +64,8 @@ fun HomeScreen(
     onSavedClicked : () -> Unit,
     onBookClicked : () -> Unit,
     onProfileClicked : () -> Unit,
+    onPlayButtonClicked : (Int) -> Unit,
+    onInfoButtonClicked : (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -89,7 +91,9 @@ fun HomeScreen(
                 is AnimeDataUiState.Success -> AllAnimeScreen(
                     allAnimeData = (homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData,
                     onAnimeClicked = onAnimeClicked,
-                    paddingValues = innerPadding
+                    paddingValues = innerPadding,
+                    onPlayButtonClicked = onPlayButtonClicked,
+                    onInfoButtonClicked = onInfoButtonClicked
                 )
 
                 is AnimeDataUiState.Error -> ErrorScreen(
@@ -134,6 +138,8 @@ fun ErrorScreen(retryAction: () -> Unit,modifier: Modifier = Modifier) {
 fun AllAnimeScreen(
     allAnimeData: AnimeData?,
     onAnimeClicked: (Int) -> Unit,
+    onPlayButtonClicked : (Int) -> Unit,
+    onInfoButtonClicked : (Int) -> Unit,
     paddingValues: PaddingValues
 ) {
 
@@ -215,7 +221,7 @@ fun AllAnimeScreen(
                         }
                     }
                     Button(
-                        onClick = { /*TODO*/ },
+                        onClick = { allAnimeData?.data?.first()?.malId?.let { onPlayButtonClicked(it) } },
                         modifier = Modifier
                             .width(126.dp)
                             .height(56.dp)
@@ -232,6 +238,11 @@ fun AllAnimeScreen(
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxSize()
+                                .clickable { allAnimeData?.data?.first()?.malId?.let {
+                                    onInfoButtonClicked(
+                                        it
+                                    )
+                                } }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Info,

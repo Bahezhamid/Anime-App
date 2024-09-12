@@ -85,5 +85,19 @@ data class Data(
     @SerializedName("role")
     val role: String? = "",
     @SerializedName("voice_actors")
-    val voiceActors: List<VoiceActor>? = listOf()
+    val voiceActors: List<VoiceActor>? = listOf(),
+    @SerializedName("episode")
+    val episode: String? = "",
+    @SerializedName("about")
+    val about: String? = "",
+    @SerializedName("anime")
+    val anime: List<Anime>? = listOf(),
+    @SerializedName("manga")
+    val manga: List<Manga>? = listOf(),
+    @SerializedName("name_kanji")
+    val nameKanji: String? = "",
+    @SerializedName("nicknames")
+    val nicknames: List<Any>? = listOf(),
+    @SerializedName("voices")
+    val voices: List<Voice>? = listOf()
 )

@@ -73,7 +73,8 @@ import kotlin.math.truncate
 fun AnimeDetailsPage(
     animeId : Int?,
     animeDetailsViewModel: AnimeDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    onBackPressed : () -> Unit
+    onBackPressed : () -> Unit,
+    onPlayButtonClicked : (Int) -> Unit
 ) {
     LaunchedEffect(animeId) {
         animeId?.let {
@@ -114,7 +115,8 @@ fun AnimeDetailsPage(
                             .value as AnimeDetailsUiState.Success).animeDetails,
                         animeCharacters = (animeDetailsViewModel.animeDataByIdUiState.collectAsState()
                             .value as AnimeDetailsUiState.Success).animeCharacters,
-                        onBackPressed = onBackPressed
+                        onBackPressed = onBackPressed,
+                        onPlayButtonClicked = onPlayButtonClicked
                     )
             }
 
@@ -126,7 +128,8 @@ fun AnimeDetailsPage(
 fun AnimeDetailsScreen(
     allAnimeDetails : AnimeDataById?,
     animeCharacters : AnimeCharacters?,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    onPlayButtonClicked : (Int) -> Unit
 ) {
     val genresList = allAnimeDetails?.data?.genres?.map { it.name } ?: emptyList()
     val genresText = genresList.joinToString(separator = ", ")
@@ -249,7 +252,7 @@ fun AnimeDetailsScreen(
     }
     Spacer(modifier = Modifier.height(15.dp))
     Button(
-        onClick = { /*TODO*/ },
+        onClick = { allAnimeDetails?.data?.malId?.let { onPlayButtonClicked(it) } },
         modifier = Modifier
             .padding(horizontal = 19.dp)
             .width(200.dp)
