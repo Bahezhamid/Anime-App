@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -110,7 +112,9 @@ fun LoginAndSignUpPage(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.secondary),
+                .background(color = MaterialTheme.colorScheme.secondary)
+                .verticalScroll(rememberScrollState())
+            ,
         ) {
             Spacer(modifier = Modifier.height(50.dp))
             Column(
@@ -119,7 +123,9 @@ fun LoginAndSignUpPage(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(topStart = 70.dp, topEnd = 70.dp))
                     .background(color = MaterialTheme.colorScheme.primary)
-                    .padding(20.dp),
+                    .padding(20.dp)
+                    .verticalScroll(rememberScrollState())
+                ,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {

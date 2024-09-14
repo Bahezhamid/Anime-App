@@ -32,7 +32,6 @@ class AnimeChaptersViewModel (private val animeDataRepository: AnimeDataReposito
             _animeChaptersUiState.value = AnimeChaptersUiState.Loading
             _animeChaptersUiState.value = try {
                 val result = animeDataRepository.getAnimeChapters(id=id,page=page)
-                Log.d("animeData", result.toString())
                 AnimeChaptersUiState.Success(result)
 
             } catch (e: IOException) {

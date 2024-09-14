@@ -21,10 +21,8 @@ sealed interface CharactersDetailsUiState {
 class CharactersDetailsViewModel(private val animeDataRepository: AnimeDataRepository) : ViewModel() {
     private val _characterDetails = MutableStateFlow<CharactersDetailsUiState>(CharactersDetailsUiState.Loading)
     val charactersDetails = _characterDetails.asStateFlow()
-    init {
-        getCharactersDetail(145)
-    }
-    private fun getCharactersDetail(id : Int) {
+
+fun getCharactersDetail(id : Int) {
         viewModelScope.launch {
             _characterDetails.value = CharactersDetailsUiState.Loading
             _characterDetails.value = try {

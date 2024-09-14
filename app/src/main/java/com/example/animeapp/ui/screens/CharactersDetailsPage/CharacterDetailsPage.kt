@@ -1,19 +1,50 @@
 package com.example.animeapp.ui.screens.CharactersDetailsPage
 
+import android.util.Log
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.animeapp.AnimeTopAppBar
+import com.example.animeapp.R
+import com.example.animeapp.model.Items
 import com.example.animeapp.ui.AppViewModelProvider
 import com.example.animeapp.ui.screens.AnimeChapterScreen.AnimeChaptersPage
 import com.example.animeapp.ui.screens.AnimeChapterScreen.AnimeChaptersUiState
@@ -22,14 +53,23 @@ import com.example.animeapp.ui.screens.HomePage.LoadingScreen
 
 @Composable
 fun CharactersDetailsPage(
+    characterId : Int?,
+    onBackButtonClicked : () -> Unit,
+    onAnimeClicked : (Int) -> Unit,
     charactersDetailsViewModel: CharactersDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    Log.d("characterId",characterId.toString())
+    LaunchedEffect(characterId) {
+        characterId?.let {
+            charactersDetailsViewModel.getCharactersDetail(it)
+        }
+    }
     Scaffold (
         topBar = {
             AnimeTopAppBar(
                 title = "",
                 isBackButton = true,
-                onBackButtonClicked = {}
+                onBackButtonClicked = onBackButtonClicked
             )
         }
     ){ innerPadding ->
@@ -56,6 +96,7 @@ fun CharactersDetailsPage(
                 is CharactersDetailsUiState.Success ->
                     CharacterDetailsScreen(
                         charactersDetailsViewModel = charactersDetailsViewModel,
+                        onAnimeClicked = onAnimeClicked,
                         modifier = Modifier.fillMaxSize()
                     )
             }
@@ -67,15 +108,264 @@ fun CharactersDetailsPage(
 @Composable
 fun CharacterDetailsScreen(
     charactersDetailsViewModel: CharactersDetailsViewModel,
+    onAnimeClicked : (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val characterData = (charactersDetailsViewModel.charactersDetails.collectAsState()
+        .value as CharactersDetailsUiState.Success).charactersDetails
+    LazyColumn(
+        modifier = modifier,
+    ) {
+
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp)
+                    .padding(horizontal = 15.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AsyncImage(
+                    model = ImageRequest
+                        .Builder(context = LocalContext.current)
+                        .data(characterData.data?.images?.jpg?.imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "poster",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .heightIn(min = 150.dp, max = 180.dp)
+                        .widthIn(min = 140.dp, max = 180.dp)
+                        .clip(RoundedCornerShape(10.dp)),
+                    error = painterResource(id = R.drawable.ic_broken_image),
+                    placeholder = painterResource(id = R.drawable.loading_img)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                characterData.data?.name?.let { name ->
+
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+
+                }
+            }
+        }
+
+
+
+        item {
+            Spacer(modifier = Modifier.height(5.dp))
+        }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(10.dp)
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = characterData.data?.favorites.toString(),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(30.dp))
+        }
+
+        characterData.data?.about?.let { about ->
+            item {
+                Text(
+                    text = about,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.padding(horizontal = 15.dp)
+                )
+            }
+        }
+        item {
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+        item {
+            Text(
+                text = "Voice Actor",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(horizontal = 15.dp)
+                )
+        }
+        item { 
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+        item {
+            LazyRow (
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ){
+                characterData.data?.voices.let {
+                    if (it != null) {
+                        items(it) { actor ->
+                            ActorCard(actorName = actor.person?.name,
+                                actorImage = actor.person?.images?.jpg?.imageUrl,
+                                actorLanguage = actor.language,
+                                modifier = Modifier
+                                    .height(120.dp)
+                                    .width(250.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.secondary)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        item {
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+        item {
+            Text(
+                text = "Anime",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(horizontal = 15.dp)
+            )
+        }
+        item {
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+        characterData.data?.anime.let {
+            if(it != null) {
+                items(it) {anime ->
+                    AnimeCard(animePoster = anime.anime?.images?.jpg?.imageUrl,
+                        animeName = anime.anime?.title,
+                        characterRole = anime.role ,
+                        animeId = anime.anime?.malId,
+                        onAnimeClicked = onAnimeClicked,
+                        modifier = Modifier
+                            .padding(horizontal = 15.dp)
+                            .height(120.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.secondary)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ActorCard(
+    actorName : String?,
+    actorImage : String?,
+    actorLanguage : String?,
     modifier: Modifier
 ) {
-    Column (
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+
+    Row(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.secondary)
+            .clip(RoundedCornerShape(10.dp))
+    ) {
+        AsyncImage(
+            model = ImageRequest
+                .Builder(context = LocalContext.current)
+                .data(actorImage)
+                .crossfade(true)
+                .build(),
+            contentDescription = "poster",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(100.dp)
+                .clip(RoundedCornerShape(10.dp)),
+            error = painterResource(id = R.drawable.ic_broken_image),
+            placeholder = painterResource(id = R.drawable.loading_img),
+        )
+        Spacer(modifier = Modifier.width(5.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(top = 10.dp)
+        ) {
+            if (actorName != null) {
+                Text(
+                    text = actorName,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            if (actorLanguage != null) {
+                Text(
+                    text = actorLanguage,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+    }
+}
+@Composable
+fun AnimeCard(
+    animePoster : String?,
+    animeName : String?,
+    animeId : Int?,
+    characterRole : String?,
+    onAnimeClicked : (Int) -> Unit,
+    modifier: Modifier
+) {
+    Row (
+        modifier = modifier.clickable {
+            if (animeId != null) {
+                onAnimeClicked(animeId)
+            }
+        }
     ){
-        val characterData =  (charactersDetailsViewModel.charactersDetails.collectAsState()
-            .value as CharactersDetailsUiState.Success).charactersDetails
-        Text(text =characterData.toString())
+        AsyncImage(
+            model = ImageRequest
+                .Builder(context = LocalContext.current)
+                .data(animePoster)
+                .crossfade(true)
+                .build(),
+            contentDescription = "poster",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(100.dp)
+                .clip(RoundedCornerShape(10.dp)),
+            error = painterResource(id = R.drawable.ic_broken_image),
+            placeholder = painterResource(id = R.drawable.loading_img),
+        )
+        Spacer(modifier = Modifier.width(5.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(top = 10.dp)
+        ) {
+            if (animeName != null) {
+                Text(
+                    text = animeName,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            if (characterRole != null) {
+                Text(
+                    text = "Role:$characterRole",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
     }
 }

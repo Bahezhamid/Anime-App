@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 data class Anime(
     @SerializedName("anime")
-    val anime: AnimeX? = AnimeX(),
+    val anime: AnimeXX? = AnimeXX(),
     @SerializedName("role")
     val role: String? = ""
 )

@@ -27,7 +27,7 @@ class HomePageViewModel(private val animeDataRepository: AnimeDataRepository) : 
         viewModelScope.launch {
             _uiState.value = AnimeDataUiState.Loading
             _uiState.value = try {
-                val result = animeDataRepository.getAnimeData(3)
+                val result = animeDataRepository.getAnimeData(1)
                 AnimeDataUiState.Success(
                     result
                 )

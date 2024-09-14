@@ -74,6 +74,7 @@ fun AnimeDetailsPage(
     animeId : Int?,
     animeDetailsViewModel: AnimeDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onBackPressed : () -> Unit,
+    onCharacterClicked: (Int) -> Unit,
     onPlayButtonClicked : (Int) -> Unit
 ) {
     LaunchedEffect(animeId) {
@@ -94,7 +95,9 @@ fun AnimeDetailsPage(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.primary),
+                .background(color = MaterialTheme.colorScheme.primary)
+                .verticalScroll(rememberScrollState())
+            ,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             when (animeDetailsViewModel.animeDataByIdUiState.collectAsState().value) {
@@ -115,20 +118,20 @@ fun AnimeDetailsPage(
                             .value as AnimeDetailsUiState.Success).animeDetails,
                         animeCharacters = (animeDetailsViewModel.animeDataByIdUiState.collectAsState()
                             .value as AnimeDetailsUiState.Success).animeCharacters,
-                        onBackPressed = onBackPressed,
-                        onPlayButtonClicked = onPlayButtonClicked
+                        onCharacterClicked = onCharacterClicked ,
+                        onPlayButtonClicked = onPlayButtonClicked,
                     )
             }
 
         }
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun AnimeDetailsScreen(
     allAnimeDetails : AnimeDataById?,
     animeCharacters : AnimeCharacters?,
-    onBackPressed: () -> Unit,
+    onCharacterClicked: (Int) -> Unit,
     onPlayButtonClicked : (Int) -> Unit
 ) {
     val genresList = allAnimeDetails?.data?.genres?.map { it.name } ?: emptyList()
@@ -244,9 +247,14 @@ fun AnimeDetailsScreen(
         contentPadding = PaddingValues(horizontal = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+
         animeCharacters?.data?.let {
             items(it.filterNotNull()) { character ->
-                CharacterCard(characterImage = character.character?.images?.jpg?.imageUrl)
+                CharacterCard(
+                    characterImage = character.character?.images?.jpg?.imageUrl,
+                    characterId = character.character?.malId,
+                    onCharacterClicked = onCharacterClicked
+                    )
             }
         }
     }
@@ -313,13 +321,21 @@ fun IconsFunction(
 @Composable
 fun CharacterCard(
     characterImage: String?,
+    characterId : Int?,
+    onCharacterClicked : (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    Log.d("charactermmmm",characterId.toString())
     Box(
         modifier = Modifier
             .size(80.dp)
             .clip(CircleShape)
             .background(Color.LightGray)
+            .clickable {
+                if (characterId != null) {
+                    onCharacterClicked(characterId)
+                }
+            }
     ) {
         AsyncImage(
             model = ImageRequest

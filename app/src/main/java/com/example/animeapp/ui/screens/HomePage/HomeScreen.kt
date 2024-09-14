@@ -50,6 +50,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.animeapp.AnimeBottomAppBar
+import com.example.animeapp.AnimeTopAppBar
 import com.example.animeapp.R
 import com.example.animeapp.model.AnimeData
 import com.example.animeapp.model.Data
@@ -69,8 +70,6 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
 
-    val allAnimeData = homePageViewModel.uiState.collectAsState()
-
     Scaffold(
         bottomBar = {
             AnimeBottomAppBar(
@@ -79,7 +78,10 @@ fun HomeScreen(
                 onBookClick = onBookClicked,
                 onProfileClick = onProfileClicked
             )
-        }
+        },
+        topBar = { AnimeTopAppBar(
+            title = "",
+            backGroundColor = Color.Transparent) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -180,20 +182,6 @@ fun AllAnimeScreen(
             )
             Column (modifier = Modifier.fillMaxSize()){
 
-                Box(modifier = Modifier
-                    .padding(end = 26.dp, top = 77.dp)
-                    .align(AbsoluteAlignment.Right)
-                    .size(50.dp)
-                    .clip(RoundedCornerShape(50.dp))
-                    .clickable { },
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = "Search",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
                 Spacer(modifier = Modifier.weight(1f))
 
                 Row(
@@ -237,12 +225,15 @@ fun AllAnimeScreen(
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxSize()
-                                .clickable { allAnimeData?.data?.first()?.malId?.let {
-                                    onInfoButtonClicked(
-                                        it
-                                    )
-                                } }
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable {
+                                    allAnimeData?.data?.first()?.malId?.let {
+                                        onInfoButtonClicked(
+                                            it
+                                        )
+                                    }
+                                }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Info,

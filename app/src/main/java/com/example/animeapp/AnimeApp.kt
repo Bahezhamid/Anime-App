@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.VideoLibrary
@@ -41,6 +42,7 @@ import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimePage
 import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimeScreen
 import com.example.animeapp.ui.screens.AnimeChapterScreen.AnimeChaptersScreen
 import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsPage
+import com.example.animeapp.ui.screens.CharactersDetailsPage.CharactersDetailsPage
 import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.screens.HomePage.HomeScreen
 import com.example.animeapp.ui.screens.LandingPage
@@ -122,6 +124,9 @@ fun AnimeApp(
                 onBackPressed = { navController.navigateUp() },
                 onPlayButtonClicked = {id ->
                     navController.navigate("animeChaptersScreen/$id")
+                },
+                onCharacterClicked = { characterId ->
+                    navController.navigate("characterDetailsPage/$characterId")
                 }
             )
         }
@@ -141,6 +146,18 @@ fun AnimeApp(
                     navController.navigate("animeDetails/$animeId")
                 }
             )
+        }
+        composable(route = AnimeScreen.CharacterDetailsPage.route) {  backStackEntry ->
+          val characterId = backStackEntry.arguments?.getString("characterId")?.toIntOrNull()
+            if(characterId != null){
+                CharactersDetailsPage(
+                    characterId = characterId,
+                    onAnimeClicked = {animeId ->
+                        navController.navigate("animeDetails/$animeId")
+                    },
+                    onBackButtonClicked = {navController.navigateUp()}
+                    )
+            }
         }
         composable(route = AnimeScreen.AnimeChaptersScreen.route) {
                 backStackEntry ->
@@ -176,7 +193,7 @@ fun AnimeBottomAppBar(
         tonalElevation = 8.dp,
         contentPadding = PaddingValues(horizontal = 16.dp),
         containerColor = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
         contentColor = MaterialTheme.colorScheme.onPrimary
     ) {
         Spacer(modifier = Modifier.weight(0.5f))
@@ -250,7 +267,8 @@ fun AnimeTopAppBar(
             )
                 }
         },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth()
+            .wrapContentHeight(),
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = backGroundColor
         )
