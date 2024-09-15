@@ -65,6 +65,7 @@ import com.example.animeapp.ui.screens.AllAnimeScreen.GenreChip
 import com.example.animeapp.ui.screens.HomePage.AnimeDataUiState
 import com.example.animeapp.ui.screens.HomePage.ErrorScreen
 import com.example.animeapp.ui.screens.HomePage.LoadingScreen
+import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 import kotlin.math.truncate
 
 
@@ -75,7 +76,8 @@ fun AnimeDetailsPage(
     animeDetailsViewModel: AnimeDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onBackPressed : () -> Unit,
     onCharacterClicked: (Int) -> Unit,
-    onPlayButtonClicked : (Int) -> Unit
+    onPlayButtonClicked : (Int) -> Unit,
+    loginAndSignUpViewModel: LoginAndSignUpViewModel
 ) {
     LaunchedEffect(animeId) {
         animeId?.let {
@@ -120,6 +122,8 @@ fun AnimeDetailsPage(
                             .value as AnimeDetailsUiState.Success).animeCharacters,
                         onCharacterClicked = onCharacterClicked ,
                         onPlayButtonClicked = onPlayButtonClicked,
+                        loginAndSignUpViewModel = loginAndSignUpViewModel,
+                        animeDetailsViewModel = animeDetailsViewModel
                     )
             }
 
@@ -132,8 +136,11 @@ fun AnimeDetailsScreen(
     allAnimeDetails : AnimeDataById?,
     animeCharacters : AnimeCharacters?,
     onCharacterClicked: (Int) -> Unit,
-    onPlayButtonClicked : (Int) -> Unit
+    onPlayButtonClicked : (Int) -> Unit,
+    loginAndSignUpViewModel: LoginAndSignUpViewModel,
+    animeDetailsViewModel: AnimeDetailsViewModel,
 ) {
+    val isAnimeAddedToFavorite = animeDetailsViewModel.isAnimeAddedToFavorite.collectAsState()
     val genresList = allAnimeDetails?.data?.genres?.map { it.name } ?: emptyList()
     val genresText = genresList.joinToString(separator = ", ")
 
@@ -283,6 +290,7 @@ fun AnimeDetailsScreen(
             .height(80.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
+
         IconsFunction(imageVector = Icons.Default.Add, iconName = "Add")
         IconsFunction(imageVector = Icons.Default.Share, iconName = "Share")
     }

@@ -1,5 +1,6 @@
 package com.example.animeapp.ui.screens.HomePage
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +25,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
@@ -61,6 +64,7 @@ import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 @Composable
 fun HomeScreen(
     homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    loginAndSignUpViewModel: LoginAndSignUpViewModel,
     onAnimeClicked : (Int) -> Unit,
     onSavedClicked : () -> Unit,
     onBookClicked : () -> Unit,
@@ -69,7 +73,6 @@ fun HomeScreen(
     onInfoButtonClicked : (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     Scaffold(
         bottomBar = {
             AnimeBottomAppBar(
@@ -95,7 +98,12 @@ fun HomeScreen(
                     onAnimeClicked = onAnimeClicked,
                     paddingValues = innerPadding,
                     onPlayButtonClicked = onPlayButtonClicked,
-                    onInfoButtonClicked = onInfoButtonClicked
+                    onInfoButtonClicked = onInfoButtonClicked,
+                    isFirstAnimeInserted = homePageViewModel.isAnimeAddedToFavorite.collectAsState().value,
+                    addToFavorite = {},
+                    removeFromFavorite = {},
+                    homePageViewModel = homePageViewModel,
+                    loginAndSignUpViewModel = loginAndSignUpViewModel
                 )
 
                 is AnimeDataUiState.Error -> ErrorScreen(
@@ -142,9 +150,14 @@ fun AllAnimeScreen(
     onAnimeClicked: (Int) -> Unit,
     onPlayButtonClicked : (Int) -> Unit,
     onInfoButtonClicked : (Int) -> Unit,
+    addToFavorite :() -> Unit,
+    removeFromFavorite :() -> Unit,
+    isFirstAnimeInserted: Boolean,
+    homePageViewModel: HomePageViewModel,
+    loginAndSignUpViewModel: LoginAndSignUpViewModel,
     paddingValues: PaddingValues
 ) {
-
+    val userId = loginAndSignUpViewModel.loginUiState.collectAsState().value.userid
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -192,20 +205,61 @@ fun AllAnimeScreen(
                         modifier = Modifier
                             .size(70.dp)
                             .clip(RoundedCornerShape(20.dp))
-                            .clickable { },
+                            .clickable {
+                                val anime = allAnimeData?.data?.firstOrNull()
+                                Log.d("animeDatas", anime?.images?.jpg?.imageUrl.toString())
+                                if (anime != null) {
+                                    if (isFirstAnimeInserted) {
+                                        anime.malId?.let {
+                                            homePageViewModel.deleteAnimeFromFavorite(
+                                                malId = it
+                                            )
+                                        }
+                                    } else {
+                                        val favoriteAnimeUiState = anime.malId?.let { malId ->
+                                            anime.images?.jpg?.imageUrl?.let { imageUrl ->
+                                                anime.title?.let { animeName ->
+                                                    FavoriteAnimeUiState(
+                                                        animeId = malId,
+                                                        animePoster = imageUrl,
+                                                        animeName = animeName,
+                                                        userId = userId
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        favoriteAnimeUiState?.let {
+                                            homePageViewModel.insertAnimeToFavorite(
+                                                favoriteAnime = it
+                                            )
+                                        }
+                                    }
+                                }
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxSize()
                         ) {
+                            if (isFirstAnimeInserted){
                             Icon(
-                                imageVector = Icons.Default.Add, contentDescription = "",
+                                imageVector = Icons.Default.Favorite, contentDescription = "",
                                 modifier = Modifier.size(50.dp),
                                 tint = MaterialTheme.colorScheme.onPrimary
                             )
 
-                            Text(text = "My List", style = MaterialTheme.typography.bodyLarge)
+                            Text(text = "Remove", style = MaterialTheme.typography.bodyLarge)
+                                }
+                            else {
+                                Icon(
+                                    imageVector = Icons.Default.FavoriteBorder, contentDescription = "",
+                                    modifier = Modifier.size(50.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
+
+                                Text(text = "Add", style = MaterialTheme.typography.bodyLarge)
+                            }
                         }
                     }
                     Button(

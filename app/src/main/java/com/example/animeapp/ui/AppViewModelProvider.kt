@@ -23,10 +23,15 @@ object AppViewModelProvider {
             )
         }
         initializer {
-            HomePageViewModel(animeApplication().container.animeDataRepository)
+            HomePageViewModel(animeApplication().container.animeDataRepository,
+                animeApplication().container.animeRepository
+            )
         }
         initializer {
-            AnimeDetailsViewModel(animeApplication().container.animeDataRepository)
+            AnimeDetailsViewModel(
+                animeApplication().container.animeDataRepository,
+                animeApplication().container.animeRepository
+                )
         }
         initializer {
             AllAnimeViewScreenModel(animeApplication().container.animeDataRepository)

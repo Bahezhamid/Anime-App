@@ -10,5 +10,6 @@ enum class AnimeScreen(val route: String) {
     AllAnimeScreen("allAnimeScreen"),
     AnimeChaptersScreen("animeChaptersScreen/{animeId}"),
     ProfilePage("profilePage"),
-    CharacterDetailsPage("characterDetailsPage/{characterId}")
+    CharacterDetailsPage("characterDetailsPage/{characterId}"),
+    UserDetailsPage("userDetailsPage")
 }

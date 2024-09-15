@@ -17,4 +17,6 @@ interface AnimeDao {
     fun login(email : String, password: String) : Flow<Users>
     @Query("select COUNT(*) from Users where email = :email")
     fun isEmailExist(email: String) : Int
+    @Query("select id from Users where email = :email and password = :password")
+    fun getUserId(email: String,password: String) : Int
 }

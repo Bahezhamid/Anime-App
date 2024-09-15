@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,23 +22,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.animeapp.ui.AppViewModelProvider
-import com.example.animeapp.ui.ProfilePage
+import com.example.animeapp.ui.screens.ProfilePage
 import com.example.animeapp.ui.navigation.AnimeScreen
 import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimePage
-import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimeScreen
 import com.example.animeapp.ui.screens.AnimeChapterScreen.AnimeChaptersScreen
 import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsPage
 import com.example.animeapp.ui.screens.CharactersDetailsPage.CharactersDetailsPage
@@ -47,6 +44,7 @@ import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.screens.HomePage.HomeScreen
 import com.example.animeapp.ui.screens.LandingPage
 import com.example.animeapp.ui.screens.SavedAnimePage
+import com.example.animeapp.ui.screens.UserDetainsScreen
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpPage
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 
@@ -112,7 +110,9 @@ fun AnimeApp(
                 onProfileClicked = {navController.navigate(AnimeScreen.ProfilePage.route)},
                 onInfoButtonClicked = {animeId ->
                     navController.navigate("animeDetails/$animeId")
-                }
+                },
+                loginAndSignUpViewModel = loginAndSignUpViewModel,
+
             )
         }
         composable(
@@ -127,7 +127,8 @@ fun AnimeApp(
                 },
                 onCharacterClicked = { characterId ->
                     navController.navigate("characterDetailsPage/$characterId")
-                }
+                },
+                loginAndSignUpViewModel = loginAndSignUpViewModel
             )
         }
         composable(route = AnimeScreen.SavedAnimeScreen.route){
@@ -174,6 +175,23 @@ fun AnimeApp(
                 onHomeClicked = {navController.navigate(AnimeScreen.HomePage.route)},
                 onSavedClicked =  {navController.navigate(AnimeScreen.SavedAnimeScreen.route)},
                 onBookClicked =  {navController.navigate(AnimeScreen.AllAnimeScreen.route)},
+                onUserDateClicked = {navController.navigate(AnimeScreen.UserDetailsPage.route)},
+                onSignOutButtonClicked = {
+                    loginAndSignUpViewModel.signOut()
+                    navController.navigate(AnimeScreen.LogIn
+                        .route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = true
+                        }
+                    }
+                },
+                loginAndSignUpViewModel = loginAndSignUpViewModel
+            )
+        }
+        composable(route = AnimeScreen.UserDetailsPage.route) {
+            UserDetainsScreen(
+                onBackButtonClicked = {navController.navigateUp()},
+                loginAndSignUpViewModel = loginAndSignUpViewModel
             )
         }
 
@@ -193,7 +211,9 @@ fun AnimeBottomAppBar(
         tonalElevation = 8.dp,
         contentPadding = PaddingValues(horizontal = 16.dp),
         containerColor = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
         contentColor = MaterialTheme.colorScheme.onPrimary
     ) {
         Spacer(modifier = Modifier.weight(0.5f))
@@ -267,7 +287,8 @@ fun AnimeTopAppBar(
             )
                 }
         },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .wrapContentHeight(),
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = backGroundColor

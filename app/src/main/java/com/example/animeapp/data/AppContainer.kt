@@ -16,7 +16,8 @@ interface AppContainer {
 class AppDataContainer(private val context: Context) : AppContainer {
     private val baseUrl = "https://api.jikan.moe/v4/"
     override val animeRepository: AnimeRepository by lazy {
-        OfflineAnimeRepository(AnimeDatabase.getDatabase(context).animeDao())
+        OfflineAnimeRepository(AnimeDatabase.getDatabase(context).animeDao(),
+            AnimeDatabase.getDatabase(context).favoriteDao())
     }
     private val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)

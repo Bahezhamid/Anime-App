@@ -2,6 +2,7 @@ package com.example.animeapp.ui.screens.logInAndSignUp
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.animeapp.data.AnimeRepository
 import com.example.animeapp.data.Users
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : ViewModel() {
@@ -23,8 +25,9 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
     fun updateEmailTextFieldValue(newValue: String) {
         _uiState.value = _uiState.value.copy(email = newValue)
     }
-
-
+    fun signOut() {
+       _loginUiState.value = UsersUiState(email = "", password = "", userid = 0)
+    }
     fun updateUserNameTextFieldValue(newValue: String) {
         _uiState.value = _uiState.value.copy(userName = newValue)
     }
@@ -57,6 +60,7 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
             }
         }
     }
+
     suspend fun login(email: String, password: String) {
         animeRepository.login(email = email, password = password)
             .onStart {
@@ -70,9 +74,12 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
                     email = user.email,
                     password = user.password,
                     userName = user.userName,
-                    isSuccess = true
+                    isSuccess = true,
+                    userid = user.id
                 )
+
             }
+
             .catch { exception ->
                 _loginUiState.value = _loginUiState.value.copy(
                     errorMessage = "Invalid email or password",
@@ -81,7 +88,7 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
             }
             .collect { newState ->
                 _loginUiState.value = newState
-                Log.d("hello", newState.toString())
+
             }
     }
 

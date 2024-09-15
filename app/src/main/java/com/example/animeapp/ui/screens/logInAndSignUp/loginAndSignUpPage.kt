@@ -92,7 +92,6 @@ fun LoginAndSignUpPage(
     val loginAndSignUpUiState by viewModel.uiState.collectAsState()
     val loginUiState by viewModel.loginUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-
     LaunchedEffect(loginUiState) {
         if (loginUiState.isSuccess) {
             onLoginAndSignUpButtonClicked()
