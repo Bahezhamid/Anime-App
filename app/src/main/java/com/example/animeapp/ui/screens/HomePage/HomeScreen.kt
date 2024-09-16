@@ -36,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.AbsoluteAlignment
@@ -63,7 +64,7 @@ import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 
 @Composable
 fun HomeScreen(
-    homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    homePageViewModel: HomePageViewModel,
     loginAndSignUpViewModel: LoginAndSignUpViewModel,
     onAnimeClicked : (Int) -> Unit,
     onSavedClicked : () -> Unit,
@@ -73,6 +74,12 @@ fun HomeScreen(
     onInfoButtonClicked : (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val animeData = (homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData
+    LaunchedEffect(animeData) {
+        animeData?.data?.first()?.malId?.let {
+            homePageViewModel.updateFavoriteStatus(animeId = it, userId = homePageViewModel.loginUiState.value.userid)
+        }
+    }
     Scaffold(
         bottomBar = {
             AnimeBottomAppBar(
@@ -90,7 +97,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.primary)
-        ) {
+        ) {(homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData
             when (homePageViewModel.uiState.collectAsState().value) {
                 is AnimeDataUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
                 is AnimeDataUiState.Success -> AllAnimeScreen(
@@ -100,10 +107,7 @@ fun HomeScreen(
                     onPlayButtonClicked = onPlayButtonClicked,
                     onInfoButtonClicked = onInfoButtonClicked,
                     isFirstAnimeInserted = homePageViewModel.isAnimeAddedToFavorite.collectAsState().value,
-                    addToFavorite = {},
-                    removeFromFavorite = {},
                     homePageViewModel = homePageViewModel,
-                    loginAndSignUpViewModel = loginAndSignUpViewModel
                 )
 
                 is AnimeDataUiState.Error -> ErrorScreen(
@@ -150,14 +154,11 @@ fun AllAnimeScreen(
     onAnimeClicked: (Int) -> Unit,
     onPlayButtonClicked : (Int) -> Unit,
     onInfoButtonClicked : (Int) -> Unit,
-    addToFavorite :() -> Unit,
-    removeFromFavorite :() -> Unit,
     isFirstAnimeInserted: Boolean,
     homePageViewModel: HomePageViewModel,
-    loginAndSignUpViewModel: LoginAndSignUpViewModel,
     paddingValues: PaddingValues
 ) {
-    val userId = loginAndSignUpViewModel.loginUiState.collectAsState().value.userid
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -207,7 +208,6 @@ fun AllAnimeScreen(
                             .clip(RoundedCornerShape(20.dp))
                             .clickable {
                                 val anime = allAnimeData?.data?.firstOrNull()
-                                Log.d("animeDatas", anime?.images?.jpg?.imageUrl.toString())
                                 if (anime != null) {
                                     if (isFirstAnimeInserted) {
                                         anime.malId?.let {
@@ -223,7 +223,7 @@ fun AllAnimeScreen(
                                                         animeId = malId,
                                                         animePoster = imageUrl,
                                                         animeName = animeName,
-                                                        userId = userId
+                                                        userId = homePageViewModel.loginUiState.value.userid
                                                     )
                                                 }
                                             }

@@ -1,14 +1,17 @@
 package com.example.animeapp.ui.screens.HomePage
 
 import android.util.Log
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.animeapp.data.AnimeDataRepository
 import com.example.animeapp.data.AnimeRepository
 import com.example.animeapp.data.Favorite
 import com.example.animeapp.model.AnimeData
+import com.example.animeapp.ui.screens.logInAndSignUp.UsersUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,20 +29,23 @@ class HomePageViewModel(
     private val animeRepository: AnimeRepository
 ) : ViewModel() {
 
+    private val _loginUiState = MutableStateFlow(UsersUiState())
+    val loginUiState : StateFlow<UsersUiState> get() = _loginUiState.asStateFlow()
     private var _uiState = MutableStateFlow<AnimeDataUiState>(AnimeDataUiState.Loading)
     val uiState get() = _uiState.asStateFlow()
-
     private var _isAnimeAddedToFavorite = MutableStateFlow<Boolean>(false)
     val isAnimeAddedToFavorite = _isAnimeAddedToFavorite
-
     init {
         getAnimeData()
     }
-
-    private fun updateFavoriteStatus(animeId: Int) {
+    fun updateUserUiState(usersUiState: UsersUiState) {
+        _loginUiState.value = usersUiState
+        Log.d("userUiState",_loginUiState.value.toString())
+    }
+    fun updateFavoriteStatus(animeId: Int,userId : Int) {
         viewModelScope.launch {
             _isAnimeAddedToFavorite.value = withContext(Dispatchers.IO) {
-                animeRepository.isFavorite(animeId)
+                animeRepository.isFavorite(animeId, userId = userId)
             }
         }
     }
@@ -52,7 +58,7 @@ class HomePageViewModel(
                 _uiState.value = AnimeDataUiState.Success(result)
 
                 val animeId = (result?.data?.firstOrNull()?.malId) ?: return@launch
-                updateFavoriteStatus(animeId)
+                updateFavoriteStatus(animeId,_loginUiState.value.userid)
 
             } catch (e: IOException) {
                 _uiState.value = AnimeDataUiState.Error
@@ -68,16 +74,16 @@ class HomePageViewModel(
                 animeId = favoriteAnime.animeId,
                 animePoster = favoriteAnime.animePoster,
                 animeName = favoriteAnime.animeName,
-                userId = favoriteAnime.userId
+                userId = loginUiState.value.userid
             ))
-            updateFavoriteStatus(favoriteAnime.animeId)
+            updateFavoriteStatus(favoriteAnime.animeId , userId = loginUiState.value.userid)
         }
     }
 
     fun deleteAnimeFromFavorite(malId: Int) {
         viewModelScope.launch {
-            animeRepository.deleteAnimeFromFavorite(malId)
-            updateFavoriteStatus(malId)
+            animeRepository.deleteAnimeFromFavorite(malId, userId = loginUiState.value.userid)
+            updateFavoriteStatus(malId, userId = loginUiState.value.userid)
         }
     }
 }

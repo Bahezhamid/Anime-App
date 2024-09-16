@@ -88,7 +88,6 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
             }
             .collect { newState ->
                 _loginUiState.value = newState
-
             }
     }
 

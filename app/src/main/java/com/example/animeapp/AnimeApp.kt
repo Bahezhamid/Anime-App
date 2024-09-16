@@ -28,7 +28,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,7 +42,8 @@ import com.example.animeapp.ui.screens.CharactersDetailsPage.CharactersDetailsPa
 import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.screens.HomePage.HomeScreen
 import com.example.animeapp.ui.screens.LandingPage
-import com.example.animeapp.ui.screens.SavedAnimePage
+import com.example.animeapp.ui.screens.SavedAnimeScreen.SavedAnimePage
+import com.example.animeapp.ui.screens.SavedAnimeScreen.SavedAnimeViewModel
 import com.example.animeapp.ui.screens.UserDetainsScreen
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpPage
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
@@ -53,7 +53,8 @@ import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 fun AnimeApp(
     navController: NavHostController = rememberNavController(),
     loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    savedAnimeViewModel: SavedAnimeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     NavHost(
         navController = navController,
@@ -81,6 +82,7 @@ fun AnimeApp(
                 onBackPressed = { navController.navigateUp() },
                 onAuthSwitchClick = { navController.navigate(AnimeScreen.SignUp.route) },
                 onLoginAndSignUpButtonClicked = { navController.navigate(AnimeScreen.HomePage.route) },
+                homePageViewModel = homePageViewModel,
                 viewModel = loginAndSignUpViewModel
             )
         }
@@ -94,6 +96,7 @@ fun AnimeApp(
                 onBackPressed = { navController.navigateUp() },
                 onAuthSwitchClick = { navController.navigate(AnimeScreen.LogIn.route) },
                 onLoginAndSignUpButtonClicked = { navController.navigate(AnimeScreen.HomePage.route) },
+                homePageViewModel = homePageViewModel,
                 viewModel = loginAndSignUpViewModel
             )
         }
@@ -111,6 +114,7 @@ fun AnimeApp(
                 onInfoButtonClicked = {animeId ->
                     navController.navigate("animeDetails/$animeId")
                 },
+                homePageViewModel = homePageViewModel,
                 loginAndSignUpViewModel = loginAndSignUpViewModel,
 
             )
@@ -128,14 +132,21 @@ fun AnimeApp(
                 onCharacterClicked = { characterId ->
                     navController.navigate("characterDetailsPage/$characterId")
                 },
-                loginAndSignUpViewModel = loginAndSignUpViewModel
+                loginAndSignUpViewModel = loginAndSignUpViewModel,
+                homePageViewModel = homePageViewModel
             )
         }
         composable(route = AnimeScreen.SavedAnimeScreen.route){
             SavedAnimePage(
                 onHomeClicked = { navController.navigate(AnimeScreen.HomePage.route) },
                 onBookClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)},
-                onProfileClicked = {navController.navigate(AnimeScreen.ProfilePage.route)}
+                onProfileClicked = {navController.navigate(AnimeScreen.ProfilePage.route)},
+                loginAndSignUpViewModel = loginAndSignUpViewModel,
+                savedAnimeViewModel = savedAnimeViewModel,
+                onAnimeClicked = { animeId ->
+                    navController.navigate("animeDetails/$animeId")
+                },
+                onCreateNewListClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)}
             )
         }
         composable(route = AnimeScreen.AllAnimeScreen.route) {

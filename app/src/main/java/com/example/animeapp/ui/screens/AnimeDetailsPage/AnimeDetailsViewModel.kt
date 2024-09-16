@@ -45,25 +45,7 @@ class AnimeDetailsViewModel (private val animeDataRepository: AnimeDataRepositor
                 _animeDataByIdUiState.value = AnimeDetailsUiState.Error
             }
         }
-        fun insertAnimeToFavorite(favoriteAnime : FavoriteAnimeUiState) {
-            Log.d("animeInser",favoriteAnime.animeName)
-            viewModelScope.launch {
-                animeRepository.insertAnimeToFavorite(favorite = Favorite(
-                    animeId = favoriteAnime.animeId,
-                    animePoster = favoriteAnime.animePoster,
-                    animeName = favoriteAnime.animeName,
-                    userId = favoriteAnime.userId
-                )
-                )
-            }
-            _isAnimeAddedToFavorite.value = true
-        }
-        fun deleteAnimeFromFavorite(malId : Int) {
-            viewModelScope.launch {
-                animeRepository.deleteAnimeFromFavorite(malId = malId)
-            }
-            _isAnimeAddedToFavorite.value = false
-        }
+
 
     }
 

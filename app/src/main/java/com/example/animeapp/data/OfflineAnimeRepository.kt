@@ -12,6 +12,7 @@ class OfflineAnimeRepository(private val animeDao: AnimeDao,
     override fun isEmailExist(email: String): Int =animeDao.isEmailExist(email = email)
     override fun getUserId(email: String, password: String): Int = animeDao.getUserId(email= email, password = password)
     override suspend fun insertAnimeToFavorite(favorite: Favorite) = favoriteDao.insert(favorite)
-    override suspend fun deleteAnimeFromFavorite(malId: Int) = favoriteDao.deleteFavoriteByAnimeId(malId = malId)
-    override fun isFavorite(malId: Int): Boolean =favoriteDao.isFavorite(malId= malId)
+    override suspend fun deleteAnimeFromFavorite(malId: Int, userId: Int) = favoriteDao.deleteFavoriteByAnimeId(malId = malId , userId = userId)
+    override fun isFavorite(malId: Int, userId : Int): Boolean =favoriteDao.isFavorite(malId= malId, userId = userId)
+    override fun getAllSavedAnime(userId: Int): List<Favorite> =favoriteDao.getAllSavedAnime(userId = userId)
 }

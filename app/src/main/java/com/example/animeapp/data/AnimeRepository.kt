@@ -8,6 +8,7 @@ interface AnimeRepository {
     fun isEmailExist(email: String) : Int
     fun getUserId(email: String,password: String) : Int
     suspend fun insertAnimeToFavorite(favorite: Favorite)
-    suspend fun deleteAnimeFromFavorite(malId : Int)
-    fun isFavorite(malId: Int) : Boolean
+    suspend fun deleteAnimeFromFavorite(malId : Int , userId: Int)
+    fun isFavorite(malId: Int, userId : Int) : Boolean
+    fun getAllSavedAnime(userId: Int) : List<Favorite>
 }

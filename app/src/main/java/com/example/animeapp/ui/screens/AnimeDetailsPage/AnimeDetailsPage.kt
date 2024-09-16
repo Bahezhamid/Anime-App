@@ -27,6 +27,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -64,6 +66,8 @@ import com.example.animeapp.ui.AppViewModelProvider
 import com.example.animeapp.ui.screens.AllAnimeScreen.GenreChip
 import com.example.animeapp.ui.screens.HomePage.AnimeDataUiState
 import com.example.animeapp.ui.screens.HomePage.ErrorScreen
+import com.example.animeapp.ui.screens.HomePage.FavoriteAnimeUiState
+import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.screens.HomePage.LoadingScreen
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 import kotlin.math.truncate
@@ -77,8 +81,10 @@ fun AnimeDetailsPage(
     onBackPressed : () -> Unit,
     onCharacterClicked: (Int) -> Unit,
     onPlayButtonClicked : (Int) -> Unit,
-    loginAndSignUpViewModel: LoginAndSignUpViewModel
+    loginAndSignUpViewModel: LoginAndSignUpViewModel,
+    homePageViewModel: HomePageViewModel
 ) {
+    val isAddedToFavorite = homePageViewModel.isAnimeAddedToFavorite.collectAsState()
     LaunchedEffect(animeId) {
         animeId?.let {
             animeDetailsViewModel.getAnimeDataById(it)
@@ -122,8 +128,7 @@ fun AnimeDetailsPage(
                             .value as AnimeDetailsUiState.Success).animeCharacters,
                         onCharacterClicked = onCharacterClicked ,
                         onPlayButtonClicked = onPlayButtonClicked,
-                        loginAndSignUpViewModel = loginAndSignUpViewModel,
-                        animeDetailsViewModel = animeDetailsViewModel
+                        homePageViewModel = homePageViewModel
                     )
             }
 
@@ -137,10 +142,12 @@ fun AnimeDetailsScreen(
     animeCharacters : AnimeCharacters?,
     onCharacterClicked: (Int) -> Unit,
     onPlayButtonClicked : (Int) -> Unit,
-    loginAndSignUpViewModel: LoginAndSignUpViewModel,
-    animeDetailsViewModel: AnimeDetailsViewModel,
+    homePageViewModel : HomePageViewModel,
 ) {
-    val isAnimeAddedToFavorite = animeDetailsViewModel.isAnimeAddedToFavorite.collectAsState()
+    val isAnimeAddedToFavorite = homePageViewModel.isAnimeAddedToFavorite.collectAsState()
+    LaunchedEffect (allAnimeDetails){
+        allAnimeDetails?.data?.malId?.let { homePageViewModel.updateFavoriteStatus(it, userId = homePageViewModel.loginUiState.value.userid) }
+    }
     val genresList = allAnimeDetails?.data?.genres?.map { it.name } ?: emptyList()
     val genresText = genresList.joinToString(separator = ", ")
 
@@ -290,9 +297,29 @@ fun AnimeDetailsScreen(
             .height(80.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-
-        IconsFunction(imageVector = Icons.Default.Add, iconName = "Add")
-        IconsFunction(imageVector = Icons.Default.Share, iconName = "Share")
+        if(isAnimeAddedToFavorite.value) {
+            IconsFunction(imageVector = Icons.Default.Favorite,
+                iconName = "Remove",
+                isAddedToFavorite = true,
+                homePageViewModel = homePageViewModel,
+                allAnimeDetails = allAnimeDetails
+            )
+        }
+        else {
+            IconsFunction(
+                imageVector = Icons.Default.FavoriteBorder,
+                iconName = "Add",
+                isAddedToFavorite = false,
+                homePageViewModel = homePageViewModel,
+                allAnimeDetails = allAnimeDetails
+                )
+        }
+        IconsFunction(
+            imageVector = Icons.Default.Share, iconName = "Share",
+            isShareButton = true,
+            homePageViewModel = homePageViewModel,
+            allAnimeDetails = allAnimeDetails
+            )
     }
 }
 
@@ -300,12 +327,44 @@ fun AnimeDetailsScreen(
 fun IconsFunction(
     imageVector: ImageVector,
     iconName : String,
+    allAnimeDetails : AnimeDataById?,
+    isAddedToFavorite : Boolean = false,
+    isShareButton : Boolean =false,
+    homePageViewModel: HomePageViewModel
 ) {
+
     Box(
         modifier = Modifier
             .size(80.dp)
             .clip(RoundedCornerShape(30.dp))
-            .clickable { },
+            .clickable {
+                if (isShareButton) {
+                    {}
+                } else if (
+                    isAddedToFavorite
+                ) {
+
+                    allAnimeDetails?.data?.malId?.let {
+                        homePageViewModel.deleteAnimeFromFavorite(
+                            malId = it
+                        )
+                    }
+                } else {
+                    allAnimeDetails?.data?.malId
+                        ?.let {
+                            allAnimeDetails.data.title?.let { it1 ->
+                                allAnimeDetails.data.images?.jpg?.imageUrl?.let { it2 ->
+                                    FavoriteAnimeUiState(
+                                        animeId = it,
+                                        animeName = it1,
+                                        animePoster = it2
+                                    )
+                                }
+                            }
+                        }
+                        ?.let { homePageViewModel.insertAnimeToFavorite(favoriteAnime = it) }
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         Column(

@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import com.example.animeapp.AnimeTopAppBar
 import com.example.animeapp.R
+import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.theme.AnimeAppTheme
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -81,7 +82,7 @@ fun LoginAndSignUpPage(
     onAuthSwitchClick : () -> Unit,
     onLoginAndSignUpButtonClicked : () -> Unit,
     viewModel: LoginAndSignUpViewModel ,
-
+    homePageViewModel: HomePageViewModel,
     modifier: Modifier = Modifier
 ) {
     val emailFocusRequester = remember { FocusRequester() }
@@ -94,6 +95,7 @@ fun LoginAndSignUpPage(
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(loginUiState) {
         if (loginUiState.isSuccess) {
+            homePageViewModel.updateUserUiState(loginUiState)
             onLoginAndSignUpButtonClicked()
         }
     }

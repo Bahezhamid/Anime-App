@@ -14,6 +14,7 @@ import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 import com.example.animeapp.ui.screens.AnimeChapterScreen.AnimeChaptersViewModel
 import com.example.animeapp.ui.screens.CharactersDetailsPage.CharactersDetailsPage
 import com.example.animeapp.ui.screens.CharactersDetailsPage.CharactersDetailsViewModel
+import com.example.animeapp.ui.screens.SavedAnimeScreen.SavedAnimeViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
@@ -42,6 +43,12 @@ object AppViewModelProvider {
         initializer {
             CharactersDetailsViewModel(animeApplication().container.animeDataRepository)
         }
+        initializer {
+            SavedAnimeViewModel(animeApplication().container.animeDataRepository,
+                animeApplication().container.animeRepository
+            )
+        }
+
     }
 }
 
