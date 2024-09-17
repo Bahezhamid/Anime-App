@@ -1,5 +1,7 @@
 package com.example.animeapp
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +26,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -123,6 +126,7 @@ fun AnimeApp(
             route = AnimeScreen.AnimeDetailsPage.route
         ) { backStackEntry ->
             val animeId = backStackEntry.arguments?.getString("animeId")?.toIntOrNull()
+            val context = LocalContext.current
             AnimeDetailsPage(
                 animeId = animeId,
                 onBackPressed = { navController.navigateUp() },
@@ -132,7 +136,9 @@ fun AnimeApp(
                 onCharacterClicked = { characterId ->
                     navController.navigate("characterDetailsPage/$characterId")
                 },
-                loginAndSignUpViewModel = loginAndSignUpViewModel,
+                onShareButtonClicked = { subject: String, animeDetails: String  , link : String ->
+                    shareOrder(context, subject = subject, animeDetails = animeDetails , link = link)
+                },
                 homePageViewModel = homePageViewModel
             )
         }
@@ -306,4 +312,20 @@ fun AnimeTopAppBar(
         )
     )
 }
+private fun shareOrder(context: Context, subject: String, animeDetails: String, link: String) {
+    val shareText = "$animeDetails\n\nCheck this out: $link"
+
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, shareText)
+    }
+    context.startActivity(
+        Intent.createChooser(
+            intent,
+            context.getString(R.string.sharing_anime)
+        )
+    )
+}
+
 

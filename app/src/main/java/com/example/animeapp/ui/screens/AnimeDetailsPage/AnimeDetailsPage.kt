@@ -81,10 +81,9 @@ fun AnimeDetailsPage(
     onBackPressed : () -> Unit,
     onCharacterClicked: (Int) -> Unit,
     onPlayButtonClicked : (Int) -> Unit,
-    loginAndSignUpViewModel: LoginAndSignUpViewModel,
+    onShareButtonClicked : (String,String , String) -> Unit,
     homePageViewModel: HomePageViewModel
 ) {
-    val isAddedToFavorite = homePageViewModel.isAnimeAddedToFavorite.collectAsState()
     LaunchedEffect(animeId) {
         animeId?.let {
             animeDetailsViewModel.getAnimeDataById(it)
@@ -128,7 +127,8 @@ fun AnimeDetailsPage(
                             .value as AnimeDetailsUiState.Success).animeCharacters,
                         onCharacterClicked = onCharacterClicked ,
                         onPlayButtonClicked = onPlayButtonClicked,
-                        homePageViewModel = homePageViewModel
+                        homePageViewModel = homePageViewModel,
+                        onShareButtonClicked = onShareButtonClicked
                     )
             }
 
@@ -142,6 +142,7 @@ fun AnimeDetailsScreen(
     animeCharacters : AnimeCharacters?,
     onCharacterClicked: (Int) -> Unit,
     onPlayButtonClicked : (Int) -> Unit,
+    onShareButtonClicked: (String, String ,String) -> Unit,
     homePageViewModel : HomePageViewModel,
 ) {
     val isAnimeAddedToFavorite = homePageViewModel.isAnimeAddedToFavorite.collectAsState()
@@ -318,7 +319,8 @@ fun AnimeDetailsScreen(
             imageVector = Icons.Default.Share, iconName = "Share",
             isShareButton = true,
             homePageViewModel = homePageViewModel,
-            allAnimeDetails = allAnimeDetails
+            allAnimeDetails = allAnimeDetails,
+            onShareButtonClicked = onShareButtonClicked
             )
     }
 }
@@ -330,16 +332,23 @@ fun IconsFunction(
     allAnimeDetails : AnimeDataById?,
     isAddedToFavorite : Boolean = false,
     isShareButton : Boolean =false,
+    onShareButtonClicked: (String, String , String) -> Unit = { _, _ , _ -> },
     homePageViewModel: HomePageViewModel
 ) {
-
+    val animeSharingDetails  = "Anime Name: ${allAnimeDetails?.data?.title}\n" +
+            "Episodes :${allAnimeDetails?.data?.episodes} (${allAnimeDetails?.data?.duration})\n" +
+            "About Anime: ${allAnimeDetails?.data?.synopsis}"
     Box(
         modifier = Modifier
             .size(80.dp)
             .clip(RoundedCornerShape(30.dp))
             .clickable {
                 if (isShareButton) {
-                    {}
+                    allAnimeDetails?.data?.url?.let {
+                        onShareButtonClicked("Sharing Anime" , animeSharingDetails ,
+                            it
+                        )
+                    }
                 } else if (
                     isAddedToFavorite
                 ) {
