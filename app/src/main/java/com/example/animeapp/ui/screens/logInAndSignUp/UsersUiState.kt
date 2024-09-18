@@ -6,5 +6,5 @@ data class UsersUiState(
     val userName : String? = "",
     val isSuccess : Boolean = false,
     val errorMessage: String? = null,
-    val userid : Int = 0,
+    val userid : String = "",
 )

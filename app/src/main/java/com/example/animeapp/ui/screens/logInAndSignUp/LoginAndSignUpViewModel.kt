@@ -1,10 +1,15 @@
 package com.example.animeapp.ui.screens.logInAndSignUp
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.animeapp.data.AnimeRepository
 import com.example.animeapp.data.Users
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,6 +18,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : ViewModel() {
@@ -22,12 +28,15 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
 
     private val _loginUiState = MutableStateFlow(UsersUiState())
     val loginUiState : StateFlow<UsersUiState> get() = _loginUiState.asStateFlow()
+    private val firebaseAuth: FirebaseAuth = Firebase.auth
     fun updateEmailTextFieldValue(newValue: String) {
         _uiState.value = _uiState.value.copy(email = newValue)
     }
     fun signOut() {
-       _loginUiState.value = UsersUiState(email = "", password = "", userid = 0)
+        firebaseAuth.signOut()
+        _loginUiState.value = UsersUiState(email = "", password = "", userid = "")
     }
+
     fun updateUserNameTextFieldValue(newValue: String) {
         _uiState.value = _uiState.value.copy(userName = newValue)
     }
@@ -43,54 +52,90 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
     fun updateRememberMeValue(rememberMe: Boolean) {
         _uiState.value = _uiState.value.copy(isRememberMeOn = rememberMe)
     }
+
     suspend fun saveAccount(signUpState: LoginAndSignUpUiState) {
-        return withContext(Dispatchers.IO) {
-            val emailExist = animeRepository.isEmailExist(signUpState.email)
+        if (validateInput(signUpState)) {
+            try {
 
-            if (validateInput(signUpState) && emailExist == 0) {
-                val user = Users(
-                    email = signUpState.email,
-                    userName = signUpState.userName,
-                    password = signUpState.password
+                val authResult = withContext(Dispatchers.IO) {
+                    firebaseAuth.createUserWithEmailAndPassword(signUpState.email, signUpState.password).await()
+                }
+
+                val firebaseUser = firebaseAuth.currentUser
+                val userId = firebaseUser?.uid
+
+                if (userId != null) {
+
+                    val user = hashMapOf(
+                        "id" to userId,
+                        "userName" to signUpState.userName,
+                        "email" to signUpState.email,
+                    )
+                    val db = Firebase.firestore
+                    db.collection("users").document(userId)
+                        .set(user)
+                        .await()
+                    _loginUiState.value = UsersUiState(
+                        email = signUpState.email,
+                        userName = signUpState.userName,
+                        isSuccess = true,
+                        userid = userId
+                    )
+                }
+            } catch (e: Exception) {
+
+                _uiState.value = _uiState.value.copy(
+                    emailError = "Registration failed: ${e.localizedMessage}"
                 )
-                animeRepository.insertItem(user)
-            } else if (emailExist > 0) {
-
-                _uiState.value = _uiState.value.copy(emailError = "Email is already registered.")
             }
         }
     }
-
     suspend fun login(email: String, password: String) {
-        animeRepository.login(email = email, password = password)
-            .onStart {
+        try {
+            val authResult = withContext(Dispatchers.IO) {
+                firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            }
+
+            val firebaseUser = firebaseAuth.currentUser
+
+            if (firebaseUser != null) {
+
+                val userId = firebaseUser.uid
+
+                val userDocument = Firebase.firestore.collection("users").document(userId).get().await()
+
+                if (userDocument.exists()) {
+                    val userData = userDocument.data
+                    val userName = userData?.get("userName") as? String ?: ""
+                    val userEmail = userData?.get("email") as? String ?: ""
+
+                    _loginUiState.value = UsersUiState(
+                        email = userEmail,
+                        userName = userName,
+                        isSuccess = true,
+                        userid = firebaseUser.uid
+                    )
+
+                    Log.d("user", firebaseUser.uid)
+                } else {
+                    _loginUiState.value = _loginUiState.value.copy(
+                        errorMessage = "User data not found in Firestore",
+                        isSuccess = false
+                    )
+                }
+            } else {
                 _loginUiState.value = _loginUiState.value.copy(
-                    errorMessage = null,
+                    errorMessage = "Authentication failed",
                     isSuccess = false
                 )
             }
-            .map { user ->
-                UsersUiState(
-                    email = user.email,
-                    password = user.password,
-                    userName = user.userName,
-                    isSuccess = true,
-                    userid = user.id
-                )
-
-            }
-
-            .catch { exception ->
-                _loginUiState.value = _loginUiState.value.copy(
-                    errorMessage = "Invalid email or password",
-                    isSuccess = false
-                )
-            }
-            .collect { newState ->
-                _loginUiState.value = newState
-            }
+        } catch (e: Exception) {
+            _loginUiState.value = _loginUiState.value.copy(
+                errorMessage = "Login failed: ${e.localizedMessage}",
+                isSuccess = false
+            )
+        }
     }
-
     private fun validateInput(signUpState: LoginAndSignUpUiState): Boolean {
         val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
         val passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#\$%^&+=])(?=\\S+\$).{8,}\$"

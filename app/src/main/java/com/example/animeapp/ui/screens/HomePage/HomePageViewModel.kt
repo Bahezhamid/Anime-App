@@ -9,11 +9,13 @@ import com.example.animeapp.data.AnimeRepository
 import com.example.animeapp.data.Favorite
 import com.example.animeapp.model.AnimeData
 import com.example.animeapp.ui.screens.logInAndSignUp.UsersUiState
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
@@ -25,27 +27,36 @@ sealed interface AnimeDataUiState {
 }
 
 class HomePageViewModel(
-    private val animeDataRepository: AnimeDataRepository,
-    private val animeRepository: AnimeRepository
+    private val animeDataRepository: AnimeDataRepository
 ) : ViewModel() {
 
     private val _loginUiState = MutableStateFlow(UsersUiState())
-    val loginUiState : StateFlow<UsersUiState> get() = _loginUiState.asStateFlow()
+    val loginUiState: StateFlow<UsersUiState> get() = _loginUiState.asStateFlow()
     private var _uiState = MutableStateFlow<AnimeDataUiState>(AnimeDataUiState.Loading)
     val uiState get() = _uiState.asStateFlow()
     private var _isAnimeAddedToFavorite = MutableStateFlow<Boolean>(false)
     val isAnimeAddedToFavorite = _isAnimeAddedToFavorite
+
+    private val firestore = FirebaseFirestore.getInstance()
+
     init {
         getAnimeData()
     }
+
     fun updateUserUiState(usersUiState: UsersUiState) {
         _loginUiState.value = usersUiState
-        Log.d("userUiState",_loginUiState.value.toString())
+        Log.d("userUiState", _loginUiState.value.toString())
     }
-    fun updateFavoriteStatus(animeId: Int,userId : Int) {
+
+    fun updateFavoriteStatus(animeId: Int, userId: String) {
         viewModelScope.launch {
             _isAnimeAddedToFavorite.value = withContext(Dispatchers.IO) {
-                animeRepository.isFavorite(animeId, userId = userId)
+                val doc = firestore.collection("favorite")
+                    .whereEqualTo("animeId", animeId)
+                    .whereEqualTo("userId", userId)
+                    .get()
+                    .await()
+                !doc.isEmpty
             }
         }
     }
@@ -58,7 +69,7 @@ class HomePageViewModel(
                 _uiState.value = AnimeDataUiState.Success(result)
 
                 val animeId = (result?.data?.firstOrNull()?.malId) ?: return@launch
-                updateFavoriteStatus(animeId,_loginUiState.value.userid)
+                updateFavoriteStatus(animeId, _loginUiState.value.userid)
 
             } catch (e: IOException) {
                 _uiState.value = AnimeDataUiState.Error
@@ -70,20 +81,51 @@ class HomePageViewModel(
 
     fun insertAnimeToFavorite(favoriteAnime: FavoriteAnimeUiState) {
         viewModelScope.launch {
-            animeRepository.insertAnimeToFavorite(favorite = Favorite(
-                animeId = favoriteAnime.animeId,
-                animePoster = favoriteAnime.animePoster,
-                animeName = favoriteAnime.animeName,
-                userId = loginUiState.value.userid
-            ))
-            updateFavoriteStatus(favoriteAnime.animeId , userId = loginUiState.value.userid)
+            val userId = loginUiState.value.userid
+            val favorite = hashMapOf(
+                "animeId" to favoriteAnime.animeId,
+                "animePoster" to favoriteAnime.animePoster,
+                "animeName" to favoriteAnime.animeName,
+                "userId" to userId
+            )
+            try {
+                firestore.collection("favorite").add(favorite)
+                    .addOnSuccessListener {
+                        Log.d("Firestore", "Anime added to favorites!")
+                        updateFavoriteStatus(favoriteAnime.animeId, userId)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("Firestore", "Error adding document", e)
+                    }
+            } catch (e: Exception) {
+                Log.e("Firestore", "Error adding favorite", e)
+            }
         }
     }
 
-    fun deleteAnimeFromFavorite(malId: Int) {
+    fun deleteAnimeFromFavorite(animeId: Int) {
         viewModelScope.launch {
-            animeRepository.deleteAnimeFromFavorite(malId, userId = loginUiState.value.userid)
-            updateFavoriteStatus(malId, userId = loginUiState.value.userid)
+            val userId = loginUiState.value.userid
+            try {
+                val querySnapshot = firestore.collection("favorite")
+                    .whereEqualTo("animeId", animeId)
+                    .whereEqualTo("userId", userId)
+                    .get()
+                    .await()
+
+                for (document in querySnapshot) {
+                    document.reference.delete()
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Anime removed from favorites!")
+                            updateFavoriteStatus(animeId, userId)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("Firestore", "Error removing document", e)
+                        }
+                }
+            } catch (e: Exception) {
+                Log.e("Firestore", "Error deleting favorite", e)
+            }
         }
     }
 }

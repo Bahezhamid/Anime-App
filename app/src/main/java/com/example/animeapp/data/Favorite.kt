@@ -20,5 +20,5 @@ data class Favorite(
     val animeId: Int,
     val animePoster: String,
     val animeName: String,
-    val userId: Int
+    val userId: String
 )

@@ -25,7 +25,6 @@ class AnimeDetailsViewModel (private val animeDataRepository: AnimeDataRepositor
     private var _animeDataByIdUiState = MutableStateFlow<AnimeDetailsUiState>(AnimeDetailsUiState.Loading)
     val animeDataByIdUiState get() = _animeDataByIdUiState.asStateFlow()
     private var _isAnimeAddedToFavorite = MutableStateFlow<Boolean>(false)
-    val isAnimeAddedToFavorite = _isAnimeAddedToFavorite
     fun getAnimeDataById(id : Int) {
         viewModelScope.launch {
             _animeDataByIdUiState.value = AnimeDetailsUiState.Loading

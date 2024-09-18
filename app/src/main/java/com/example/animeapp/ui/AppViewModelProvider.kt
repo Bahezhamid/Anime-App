@@ -25,7 +25,6 @@ object AppViewModelProvider {
         }
         initializer {
             HomePageViewModel(animeApplication().container.animeDataRepository,
-                animeApplication().container.animeRepository
             )
         }
         initializer {
@@ -45,7 +44,6 @@ object AppViewModelProvider {
         }
         initializer {
             SavedAnimeViewModel(animeApplication().container.animeDataRepository,
-                animeApplication().container.animeRepository
             )
         }
 

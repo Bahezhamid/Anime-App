@@ -97,7 +97,8 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.primary)
-        ) {(homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData
+        ) {
+            (homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData
             when (homePageViewModel.uiState.collectAsState().value) {
                 is AnimeDataUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
                 is AnimeDataUiState.Success -> AllAnimeScreen(
@@ -109,7 +110,6 @@ fun HomeScreen(
                     isFirstAnimeInserted = homePageViewModel.isAnimeAddedToFavorite.collectAsState().value,
                     homePageViewModel = homePageViewModel,
                 )
-
                 is AnimeDataUiState.Error -> ErrorScreen(
                     homePageViewModel::getAnimeData,
                     modifier = modifier.fillMaxSize()
@@ -212,7 +212,7 @@ fun AllAnimeScreen(
                                     if (isFirstAnimeInserted) {
                                         anime.malId?.let {
                                             homePageViewModel.deleteAnimeFromFavorite(
-                                                malId = it
+                                                animeId = it
                                             )
                                         }
                                     } else {
