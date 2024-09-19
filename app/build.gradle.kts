@@ -75,6 +75,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation (libs.androidx.material.icons.extended)
 
+    // datastore
+    implementation(libs.androidx.datastore.preferences)
+
+
     // Room components
     implementation (libs.androidx.room.runtime)
     implementation (libs.androidx.room.ktx)

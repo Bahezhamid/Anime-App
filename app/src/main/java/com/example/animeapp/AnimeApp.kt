@@ -44,7 +44,7 @@ import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsPage
 import com.example.animeapp.ui.screens.CharactersDetailsPage.CharactersDetailsPage
 import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.screens.HomePage.HomeScreen
-import com.example.animeapp.ui.screens.LandingPage
+import com.example.animeapp.ui.screens.LandingPage.LandingPage
 import com.example.animeapp.ui.screens.SavedAnimeScreen.SavedAnimePage
 import com.example.animeapp.ui.screens.SavedAnimeScreen.SavedAnimeViewModel
 import com.example.animeapp.ui.screens.UserDetainsScreen
@@ -201,6 +201,7 @@ fun AnimeApp(
                             inclusive = true
                         }
                     }
+                    savedAnimeViewModel.removeSavedAnime()
                 },
                 loginAndSignUpViewModel = loginAndSignUpViewModel
             )

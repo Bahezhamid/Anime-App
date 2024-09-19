@@ -31,7 +31,11 @@ import androidx.compose.ui.unit.dp
 import com.example.animeapp.AnimeBottomAppBar
 import com.example.animeapp.AnimeTopAppBar
 import com.example.animeapp.R
+import com.example.animeapp.ui.screens.HomePage.AllAnimeScreen
 import com.example.animeapp.ui.screens.HomePage.AnimeCard
+import com.example.animeapp.ui.screens.HomePage.AnimeDataUiState
+import com.example.animeapp.ui.screens.HomePage.ErrorScreen
+import com.example.animeapp.ui.screens.HomePage.LoadingScreen
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 
 @Composable
@@ -48,7 +52,6 @@ fun SavedAnimePage (
     LaunchedEffect (userId){
         savedAnimeViewModel.getAllSavedAnime(userId)
     }
-    val allSavedAnime = savedAnimeViewModel.savedAnimeUiState.collectAsState()
     Scaffold(
         topBar = {
             AnimeTopAppBar(title = "My List")
@@ -62,79 +65,109 @@ fun SavedAnimePage (
             )
         }
     ) { innerPadding ->
-        if(allSavedAnime.value.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.primary)
-                    .padding(innerPadding)
-                    .padding(start = 26.dp, end = 26.dp, top = 26.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.jiraya_pic),
-                    contentDescription = "List is Empty",
-                    modifier = Modifier
-                        .height(220.dp)
-                        .width(280.dp)
-                        .clip(CircleShape)
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "Many shows to watch.",
-                    style = MaterialTheme.typography.headlineLarge
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                Text(
-                    text = "Let's  watch some..",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Button(
-                    onClick = onCreateNewListClicked,
 
-                    modifier = Modifier
-                        .height(50.dp)
-                        .width(184.dp)
-                        .clip(RoundedCornerShape(10.dp)),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    )
-                ) {
-                    Text(
-                        text = "Create new list",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary)
+        ) {
+           
+            when (savedAnimeViewModel.savedAnimeUiState.collectAsState().value) {
+                is SavedAnimeUiState.Loading -> LoadingScreen(modifier = Modifier.fillMaxSize())
+                is SavedAnimeUiState.Success -> SavedAnimeScreen(
+                    savedAnimeViewModel = savedAnimeViewModel,
+                    onCreateNewListClicked = onCreateNewListClicked,
+                    onAnimeClicked = onAnimeClicked
+                )
+                is SavedAnimeUiState.Error -> ErrorScreen(
+                    { savedAnimeViewModel.getAllSavedAnime(userId) },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
-        else{
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+
+
+    }
+}
+
+@Composable
+fun SavedAnimeScreen(
+    savedAnimeViewModel: SavedAnimeViewModel,
+    onAnimeClicked : (Int) -> Unit,
+    onCreateNewListClicked : () -> Unit,
+) {
+    val allSavedAnime =   (savedAnimeViewModel.savedAnimeUiState.collectAsState().value as SavedAnimeUiState.Success).savedAnimeData
+    if(allSavedAnime.isNullOrEmpty()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(start = 26.dp, end = 26.dp, top = 26.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.jiraya_pic),
+                contentDescription = "List is Empty",
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.primary)
-                    .padding(innerPadding)
-                ,
-                contentPadding = PaddingValues(
-                    start = 10.dp,
-                    top = 10.dp,
-                    end = 0.dp,
-                    bottom = 10.dp,
-                ),
+                    .height(220.dp)
+                    .width(280.dp)
+                    .clip(CircleShape)
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "Many shows to watch.",
+                style = MaterialTheme.typography.headlineLarge
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = "Let's  watch some..",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(
+                onClick = onCreateNewListClicked,
+
+                modifier = Modifier
+                    .height(50.dp)
+                    .width(184.dp)
+                    .clip(RoundedCornerShape(10.dp)),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
             ) {
-
-                    items(allSavedAnime.value) {anime ->
-                        AnimeCard(animeId = anime.animeId,
-                            animeTitle = anime.animeName,
-                            animePoster = anime.animePoster,
-                            onAnimeClicked = onAnimeClicked,
-                        )
-                    }
-
+                Text(
+                    text = "Create new list",
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
+
+        }
+    }
+    else{
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary)
+            ,
+            contentPadding = PaddingValues(
+                start = 10.dp,
+                top = 10.dp,
+                end = 0.dp,
+                bottom = 10.dp,
+            ),
+        ) {
+
+            items(allSavedAnime) {anime ->
+                AnimeCard(animeId = anime.animeId,
+                    animeTitle = anime.animeName,
+                    animePoster = anime.animePoster,
+                    onAnimeClicked = onAnimeClicked,
+                )
+            }
+
         }
     }
 }

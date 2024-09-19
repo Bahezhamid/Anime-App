@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.animeapp.data.AnimeDataRepository
 import com.example.animeapp.data.Favorite
+import com.example.animeapp.model.AnimeData
+import com.example.animeapp.ui.screens.HomePage.AnimeDataUiState
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,25 +14,34 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+sealed interface SavedAnimeUiState {
+    data class Success(val savedAnimeData: List<Favorite>?) : SavedAnimeUiState
+    object Error : SavedAnimeUiState
+    object Loading : SavedAnimeUiState
+}
 
 class SavedAnimeViewModel(
     private val animeDataRepository: AnimeDataRepository
 ) : ViewModel() {
-    private val _savedAnimeUiState = MutableStateFlow<List<Favorite>>(emptyList())
-    val savedAnimeUiState: StateFlow<List<Favorite>> = _savedAnimeUiState
+    private val _savedAnimeUiState = MutableStateFlow<SavedAnimeUiState>(SavedAnimeUiState.Loading)
+    val savedAnimeUiState = _savedAnimeUiState
 
     private val firestore = FirebaseFirestore.getInstance()
-
+    fun removeSavedAnime() {
+        _savedAnimeUiState.value = SavedAnimeUiState.Success(null)
+    }
     fun getAllSavedAnime(userId: String) {
         viewModelScope.launch {
-            _savedAnimeUiState.value = withContext(Dispatchers.IO) {
-                try {
+            _savedAnimeUiState.value = SavedAnimeUiState.Loading
+
+            try {
+                val favorites = withContext(Dispatchers.IO) {
                     val querySnapshot = firestore.collection("favorite")
                         .whereEqualTo("userId", userId)
                         .get()
                         .await()
 
-                    val favorites = querySnapshot.documents.map { document ->
+                    querySnapshot.documents.map { document ->
                         Favorite(
                             animeId = document.getLong("animeId")?.toInt() ?: 0,
                             animePoster = document.getString("animePoster") ?: "",
@@ -38,12 +49,13 @@ class SavedAnimeViewModel(
                             userId = document.getString("userId") ?: ""
                         )
                     }
-                    favorites
-                } catch (e: Exception) {
-                    Log.e("SavedAnimeViewModel", "Error fetching saved anime", e)
-                    emptyList()
                 }
+                _savedAnimeUiState.value = SavedAnimeUiState.Success(favorites)
+            } catch (e: Exception) {
+                Log.e("SavedAnimeViewModel", "Error fetching saved anime", e)
+                _savedAnimeUiState.value = SavedAnimeUiState.Error
             }
         }
+
     }
 }

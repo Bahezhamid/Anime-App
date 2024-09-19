@@ -79,7 +79,10 @@ class HomePageViewModel(
         }
     }
 
+
     fun insertAnimeToFavorite(favoriteAnime: FavoriteAnimeUiState) {
+        _isAnimeAddedToFavorite.value = true
+
         viewModelScope.launch {
             val userId = loginUiState.value.userid
             val favorite = hashMapOf(
@@ -92,18 +95,21 @@ class HomePageViewModel(
                 firestore.collection("favorite").add(favorite)
                     .addOnSuccessListener {
                         Log.d("Firestore", "Anime added to favorites!")
-                        updateFavoriteStatus(favoriteAnime.animeId, userId)
                     }
                     .addOnFailureListener { e ->
                         Log.w("Firestore", "Error adding document", e)
+                        _isAnimeAddedToFavorite.value = false
                     }
             } catch (e: Exception) {
                 Log.e("Firestore", "Error adding favorite", e)
+                _isAnimeAddedToFavorite.value = false
             }
         }
     }
 
     fun deleteAnimeFromFavorite(animeId: Int) {
+        _isAnimeAddedToFavorite.value = false
+
         viewModelScope.launch {
             val userId = loginUiState.value.userid
             try {
@@ -117,14 +123,16 @@ class HomePageViewModel(
                     document.reference.delete()
                         .addOnSuccessListener {
                             Log.d("Firestore", "Anime removed from favorites!")
-                            updateFavoriteStatus(animeId, userId)
                         }
                         .addOnFailureListener { e ->
                             Log.w("Firestore", "Error removing document", e)
+
+                            _isAnimeAddedToFavorite.value = true
                         }
                 }
             } catch (e: Exception) {
                 Log.e("Firestore", "Error deleting favorite", e)
+                _isAnimeAddedToFavorite.value = true
             }
         }
     }

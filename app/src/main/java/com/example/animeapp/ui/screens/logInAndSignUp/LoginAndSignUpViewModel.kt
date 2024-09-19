@@ -35,6 +35,13 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
     fun signOut() {
         firebaseAuth.signOut()
         _loginUiState.value = UsersUiState(email = "", password = "", userid = "")
+        _uiState.value = LoginAndSignUpUiState(
+            email =  "",
+            password = "",
+            isRememberMeOn = false,
+            confirmPassword = "",
+            userName = ""
+        )
     }
 
     fun updateUserNameTextFieldValue(newValue: String) {

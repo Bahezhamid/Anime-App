@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -89,6 +90,7 @@ fun LoginAndSignUpPage(
     val userNameFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
     val confirmPasswordFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val loginAndSignUpUiState by viewModel.uiState.collectAsState()
     val loginUiState by viewModel.loginUiState.collectAsState()
@@ -198,6 +200,7 @@ fun LoginAndSignUpPage(
                     onImeAction = {
                         if (isSignUpPage) confirmPasswordFocusRequester.requestFocus()
                         else {
+                            keyboardController?.hide()
                             coroutineScope.launch {
                                 viewModel.login(
                                     email = viewModel.uiState.value.email,
@@ -229,6 +232,7 @@ fun LoginAndSignUpPage(
                         ),
                         focusRequester = confirmPasswordFocusRequester,
                         onImeAction = {
+                            keyboardController?.hide()
                             coroutineScope.launch {
                                 viewModel.saveAccount(signUpState = viewModel.uiState.value)
                                 viewModel.login(
