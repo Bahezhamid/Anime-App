@@ -5,6 +5,7 @@ data class UsersUiState(
     val password : String? = "",
     val userName : String? = "",
     val isSuccess : Boolean = false,
+    var isLoading : Boolean = true,
     val errorMessage: String? = null,
     val userid : String = "",
 )

@@ -74,12 +74,7 @@ fun HomeScreen(
     onInfoButtonClicked : (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val animeData = (homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData
-    LaunchedEffect(animeData) {
-        animeData?.data?.first()?.malId?.let {
-            homePageViewModel.updateFavoriteStatus(animeId = it, userId = homePageViewModel.loginUiState.value.userid)
-        }
-    }
+
     Scaffold(
         bottomBar = {
             AnimeBottomAppBar(
@@ -98,11 +93,10 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.primary)
         ) {
-            (homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData
-            when (homePageViewModel.uiState.collectAsState().value) {
+            when (val uiState = homePageViewModel.uiState.collectAsState().value) {
                 is AnimeDataUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
                 is AnimeDataUiState.Success -> AllAnimeScreen(
-                    allAnimeData = (homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData,
+                    allAnimeData = uiState.animeData,
                     onAnimeClicked = onAnimeClicked,
                     paddingValues = innerPadding,
                     onPlayButtonClicked = onPlayButtonClicked,
@@ -158,7 +152,12 @@ fun AllAnimeScreen(
     homePageViewModel: HomePageViewModel,
     paddingValues: PaddingValues
 ) {
-
+    val animeData = (homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData
+    LaunchedEffect(animeData) {
+        animeData?.data?.first()?.malId?.let {
+            homePageViewModel.updateFavoriteStatus(animeId = it, userId = homePageViewModel.loginUiState.value.userid)
+        }
+    }
         Box(
             modifier = Modifier
                 .fillMaxWidth()

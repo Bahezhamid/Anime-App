@@ -20,7 +20,8 @@ object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
             LoginAndSignUpViewModel(
-                animeApplication().container.animeRepository
+                animeApplication().container.animeRepository,
+                animeApplication().userPreferencesRepository
             )
         }
         initializer {

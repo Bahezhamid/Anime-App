@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.animeapp.data.AnimeRepository
+import com.example.animeapp.data.UserPreferencesRepository
 import com.example.animeapp.data.Users
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -21,7 +22,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
-class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : ViewModel() {
+class LoginAndSignUpViewModel(
+    private val animeRepository: AnimeRepository,
+     private val userPreferencesRepository: UserPreferencesRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginAndSignUpUiState())
     val uiState: StateFlow<LoginAndSignUpUiState> get() = _uiState.asStateFlow()
@@ -32,9 +36,23 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
     fun updateEmailTextFieldValue(newValue: String) {
         _uiState.value = _uiState.value.copy(email = newValue)
     }
+    init {
+
+        viewModelScope.launch {
+            userPreferencesRepository.userEmail.collect { savedEmail ->
+                userPreferencesRepository.userPassword.collect { savedPassword ->
+                    if (!savedEmail.isNullOrEmpty() && !savedPassword.isNullOrEmpty()) {
+                        login(savedEmail, savedPassword)
+                    } else {
+                        _loginUiState.value = _loginUiState.value.copy(isLoading = false)
+                }
+                }
+            }
+        }
+    }
     fun signOut() {
         firebaseAuth.signOut()
-        _loginUiState.value = UsersUiState(email = "", password = "", userid = "")
+        _loginUiState.value = UsersUiState(email = "", password = "", userid = "", isLoading = false)
         _uiState.value = LoginAndSignUpUiState(
             email =  "",
             password = "",
@@ -42,6 +60,9 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
             confirmPassword = "",
             userName = ""
         )
+        viewModelScope.launch {
+            userPreferencesRepository.saveUserCredentials("", "")
+        }
     }
 
     fun updateUserNameTextFieldValue(newValue: String) {
@@ -62,6 +83,9 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
 
     suspend fun saveAccount(signUpState: LoginAndSignUpUiState) {
         if (validateInput(signUpState)) {
+            _loginUiState.value = _loginUiState.value.copy(
+                isLoading = true
+            )
             try {
 
                 val authResult = withContext(Dispatchers.IO) {
@@ -86,19 +110,33 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
                         email = signUpState.email,
                         userName = signUpState.userName,
                         isSuccess = true,
+                        isLoading = false,
                         userid = userId
                     )
+                    if (_uiState.value.isRememberMeOn) {
+                        viewModelScope.launch {
+                            userPreferencesRepository.saveUserCredentials(signUpState.email, signUpState.password)
+                        }
+                    }
                 }
             } catch (e: Exception) {
 
                 _uiState.value = _uiState.value.copy(
-                    emailError = "Registration failed: ${e.localizedMessage}"
+                    emailError = "Not Valid Email"
+                )
+                _loginUiState.value = _loginUiState.value.copy(
+                    isSuccess = false,
+                    isLoading = false
                 )
             }
         }
     }
     suspend fun login(email: String, password: String) {
+        _loginUiState.value = _loginUiState.value.copy(
+            isLoading = true
+        )
         try {
+
             val authResult = withContext(Dispatchers.IO) {
                 firebaseAuth.signInWithEmailAndPassword(email, password).await()
             }
@@ -115,31 +153,37 @@ class LoginAndSignUpViewModel(private val animeRepository: AnimeRepository) : Vi
                     val userData = userDocument.data
                     val userName = userData?.get("userName") as? String ?: ""
                     val userEmail = userData?.get("email") as? String ?: ""
-
                     _loginUiState.value = UsersUiState(
                         email = userEmail,
                         userName = userName,
                         isSuccess = true,
+                        isLoading = false,
                         userid = firebaseUser.uid
                     )
-
-                    Log.d("user", firebaseUser.uid)
+                    if (_uiState.value.isRememberMeOn) {
+                        viewModelScope.launch {
+                            userPreferencesRepository.saveUserCredentials(userEmail,password)
+                        }
+                    }
                 } else {
                     _loginUiState.value = _loginUiState.value.copy(
-                        errorMessage = "User data not found in Firestore",
-                        isSuccess = false
+                        errorMessage = "User data not found ",
+                        isSuccess = false,
+                        isLoading = false
                     )
                 }
             } else {
                 _loginUiState.value = _loginUiState.value.copy(
                     errorMessage = "Authentication failed",
-                    isSuccess = false
+                    isSuccess = false,
+                    isLoading = false
                 )
             }
         } catch (e: Exception) {
             _loginUiState.value = _loginUiState.value.copy(
-                errorMessage = "Login failed: ${e.localizedMessage}",
-                isSuccess = false
+                errorMessage = "Wrong Email Or Password",
+                isSuccess = false,
+                isLoading = false
             )
         }
     }

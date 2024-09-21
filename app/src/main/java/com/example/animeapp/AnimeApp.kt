@@ -72,6 +72,9 @@ fun AnimeApp(
             LandingPage(
                 onLoginButtonClicked = { navController.navigate(AnimeScreen.LogIn.route) },
                 onSignButtonClicked = { navController.navigate(AnimeScreen.SignUp.route) },
+                loginAndSignUpViewModel = loginAndSignUpViewModel,
+                homePageViewModel = homePageViewModel,
+                onLoginAndSignUpButtonClicked = {navController.navigate(AnimeScreen.HomePage.route)},
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -137,7 +140,7 @@ fun AnimeApp(
                     navController.navigate("characterDetailsPage/$characterId")
                 },
                 onShareButtonClicked = { subject: String, animeDetails: String  , link : String ->
-                    shareOrder(context, subject = subject, animeDetails = animeDetails , link = link)
+                    shareAnime(context, subject = subject, animeDetails = animeDetails , link = link)
                 },
                 homePageViewModel = homePageViewModel
             )
@@ -195,7 +198,7 @@ fun AnimeApp(
                 onUserDateClicked = {navController.navigate(AnimeScreen.UserDetailsPage.route)},
                 onSignOutButtonClicked = {
                     loginAndSignUpViewModel.signOut()
-                    navController.navigate(AnimeScreen.LogIn
+                    navController.navigate(AnimeScreen.Start
                         .route) {
                         popUpTo(navController.graph.startDestinationId) {
                             inclusive = true
@@ -313,7 +316,7 @@ fun AnimeTopAppBar(
         )
     )
 }
-private fun shareOrder(context: Context, subject: String, animeDetails: String, link: String) {
+private fun shareAnime(context: Context, subject: String, animeDetails: String, link: String) {
     val shareText = "$animeDetails\n\nCheck this out: $link"
 
     val intent = Intent(Intent.ACTION_SEND).apply {

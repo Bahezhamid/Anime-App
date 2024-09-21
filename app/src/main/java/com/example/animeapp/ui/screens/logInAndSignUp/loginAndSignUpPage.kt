@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import com.example.animeapp.AnimeTopAppBar
 import com.example.animeapp.R
+import com.example.animeapp.ui.screens.AllAnimeScreen.LoadingScreen
 import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.theme.AnimeAppTheme
 import kotlinx.coroutines.coroutineScope
@@ -91,7 +92,6 @@ fun LoginAndSignUpPage(
     val passwordFocusRequester = remember { FocusRequester() }
     val confirmPasswordFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-
     val loginAndSignUpUiState by viewModel.uiState.collectAsState()
     val loginUiState by viewModel.loginUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -111,6 +111,7 @@ fun LoginAndSignUpPage(
 
     ){
         innerPadding ->
+
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -132,109 +133,162 @@ fun LoginAndSignUpPage(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
+
                 Spacer(modifier = Modifier.height(96.dp))
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineLarge
-                )
-                Spacer(modifier = Modifier.height(9.dp))
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.alpha(0.8f)
-                )
-                Spacer(modifier = Modifier.height(61.dp))
-                LoginAndSignUpTextField(
-                    textFieldValue = loginAndSignUpUiState.email,
-                    onTextFieldValueChange = { newValue ->
-                        viewModel.updateEmailTextFieldValue(
-                            newValue
-                        )
-                    },
-                    placeHolderValue = stringResource(R.string.email),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Next
-                    ),
-                    focusRequester = emailFocusRequester,
-                    onImeAction = {
-                        if (isSignUpPage) userNameFocusRequester.requestFocus()
-                        else passwordFocusRequester.requestFocus()
-                    },
-                    isError = viewModel.uiState.collectAsState().value.emailError != null,
-                    errorMessage = if (isSignUpPage) viewModel.uiState.collectAsState().value.emailError else null
-                )
-                if (isSignUpPage) {
-                    Spacer(modifier = Modifier.height(15.dp))
+                if (loginUiState.isLoading) {
+                    LoadingScreen(modifier = Modifier.fillMaxSize())
+                } else if (!loginUiState.isSuccess)
+                {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                    Spacer(modifier = Modifier.height(9.dp))
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.alpha(0.8f)
+                    )
+                    Spacer(modifier = Modifier.height(61.dp))
                     LoginAndSignUpTextField(
-                        textFieldValue = loginAndSignUpUiState.userName,
+                        textFieldValue = loginAndSignUpUiState.email,
                         onTextFieldValueChange = { newValue ->
-                            viewModel.updateUserNameTextFieldValue(
+                            viewModel.updateEmailTextFieldValue(
                                 newValue
                             )
                         },
-                        placeHolderValue = stringResource(R.string.userName),
+                        placeHolderValue = stringResource(R.string.email),
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Next
                         ),
-                        focusRequester = userNameFocusRequester,
-                        onImeAction = { passwordFocusRequester.requestFocus() },
-                        isError = viewModel.uiState.collectAsState().value.userNameError != null,
-                        errorMessage = viewModel.uiState.collectAsState().value.userNameError
-
+                        focusRequester = emailFocusRequester,
+                        onImeAction = {
+                            if (isSignUpPage) userNameFocusRequester.requestFocus()
+                            else passwordFocusRequester.requestFocus()
+                        },
+                        isError = viewModel.uiState.collectAsState().value.emailError != null,
+                        errorMessage = if (isSignUpPage) viewModel.uiState.collectAsState().value.emailError else null
                     )
-                }
-                Spacer(modifier = Modifier.height(31.dp))
-                LoginAndSignUpTextField(
-                    textFieldValue = loginAndSignUpUiState.password,
-                    onTextFieldValueChange = { newValue ->
-                        viewModel.updatePasswordTextFieldValue(
-                            newValue
-                        )
-                    },
-                    placeHolderValue = stringResource(R.string.password),
-                    isPassword = true,
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Next
-                    ),
-                    focusRequester = passwordFocusRequester,
-                    onImeAction = {
-                        if (isSignUpPage) confirmPasswordFocusRequester.requestFocus()
-                        else {
-                            keyboardController?.hide()
-                            coroutineScope.launch {
-                                viewModel.login(
-                                    email = viewModel.uiState.value.email,
-                                    password = viewModel.uiState.value.password
+                    if (isSignUpPage) {
+                        Spacer(modifier = Modifier.height(15.dp))
+                        LoginAndSignUpTextField(
+                            textFieldValue = loginAndSignUpUiState.userName,
+                            onTextFieldValueChange = { newValue ->
+                                viewModel.updateUserNameTextFieldValue(
+                                    newValue
                                 )
-                            }
-                            if (viewModel.loginUiState.value.isSuccess) {
-                                onLoginAndSignUpButtonClicked()
-                            }
-                        }
-                    },
-                    isError = viewModel.uiState.collectAsState().value.passwordError != null,
-                    errorMessage = if (isSignUpPage) viewModel.uiState.collectAsState().value.passwordError else
-                        viewModel.loginUiState.collectAsState().value.errorMessage
-                )
-                if (isSignUpPage) {
-                    Spacer(modifier = Modifier.height(15.dp))
+                            },
+                            placeHolderValue = stringResource(R.string.userName),
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                imeAction = ImeAction.Next
+                            ),
+                            focusRequester = userNameFocusRequester,
+                            onImeAction = { passwordFocusRequester.requestFocus() },
+                            isError = viewModel.uiState.collectAsState().value.userNameError != null,
+                            errorMessage = viewModel.uiState.collectAsState().value.userNameError
+
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(31.dp))
                     LoginAndSignUpTextField(
-                        textFieldValue = loginAndSignUpUiState.confirmPassword,
+                        textFieldValue = loginAndSignUpUiState.password,
                         onTextFieldValueChange = { newValue ->
-                            viewModel.updateConfirmPasswordTextFieldValue(
+                            viewModel.updatePasswordTextFieldValue(
                                 newValue
                             )
                         },
-                        placeHolderValue = stringResource(R.string.confirm_password),
+                        placeHolderValue = stringResource(R.string.password),
                         isPassword = true,
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Done
+                            imeAction = ImeAction.Next
                         ),
-                        focusRequester = confirmPasswordFocusRequester,
+                        focusRequester = passwordFocusRequester,
                         onImeAction = {
-                            keyboardController?.hide()
+                            if (isSignUpPage) confirmPasswordFocusRequester.requestFocus()
+                            else {
+                                keyboardController?.hide()
+                                coroutineScope.launch {
+                                    viewModel.login(
+                                        email = viewModel.uiState.value.email,
+                                        password = viewModel.uiState.value.password
+                                    )
+                                }
+                                if (viewModel.loginUiState.value.isSuccess) {
+                                    onLoginAndSignUpButtonClicked()
+                                }
+                            }
+                        },
+                        isError = viewModel.uiState.collectAsState().value.passwordError != null,
+                        errorMessage = if (isSignUpPage) viewModel.uiState.collectAsState().value.passwordError else
+                            viewModel.loginUiState.collectAsState().value.errorMessage
+                    )
+                    if (isSignUpPage) {
+                        Spacer(modifier = Modifier.height(15.dp))
+                        LoginAndSignUpTextField(
+                            textFieldValue = loginAndSignUpUiState.confirmPassword,
+                            onTextFieldValueChange = { newValue ->
+                                viewModel.updateConfirmPasswordTextFieldValue(
+                                    newValue
+                                )
+                            },
+                            placeHolderValue = stringResource(R.string.confirm_password),
+                            isPassword = true,
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                imeAction = ImeAction.Done
+                            ),
+                            focusRequester = confirmPasswordFocusRequester,
+                            onImeAction = {
+                                keyboardController?.hide()
+                                coroutineScope.launch {
+                                    viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                                    viewModel.login(
+                                        email = viewModel.uiState.value.email,
+                                        password = viewModel.uiState.value.password
+                                    )
+                                }
+                                if (viewModel.loginUiState.value.isSuccess) {
+                                    onLoginAndSignUpButtonClicked()
+                                }
+                            },
+                            isError = viewModel.uiState.collectAsState().value.confirmPasswordError != null,
+                            errorMessage = viewModel.uiState.collectAsState().value.confirmPasswordError
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(15.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable {
+                                viewModel.updateRememberMeValue(!loginAndSignUpUiState.isRememberMeOn)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = if (loginAndSignUpUiState.isRememberMeOn)
+                                    Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
+                                contentDescription = stringResource(R.string.remember_me_icon),
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.remember_me),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        if (!isSignUpPage) {
+                            Text(text = stringResource(R.string.forget_password))
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(25.dp))
+                    Button(
+                        onClick = {
                             coroutineScope.launch {
-                                viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                                if (isSignUpPage) {
+                                    viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                                }
                                 viewModel.login(
                                     email = viewModel.uiState.value.email,
                                     password = viewModel.uiState.value.password
@@ -244,105 +298,57 @@ fun LoginAndSignUpPage(
                                 onLoginAndSignUpButtonClicked()
                             }
                         },
-                        isError = viewModel.uiState.collectAsState().value.confirmPasswordError != null,
-                        errorMessage = viewModel.uiState.collectAsState().value.confirmPasswordError
-                    )
-                }
-                Spacer(modifier = Modifier.height(15.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable {
-                            viewModel.updateRememberMeValue(!loginAndSignUpUiState.isRememberMeOn)
-                        }
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .sizeIn(minHeight = 41.dp)
                     ) {
-                        Icon(
-                            imageVector = if (loginAndSignUpUiState.isRememberMeOn)
-                                Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
-                            contentDescription = stringResource(R.string.remember_me_icon),
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = stringResource(R.string.remember_me),
-                            style = MaterialTheme.typography.bodySmall
+                            text = onButtonText,
+                            style = MaterialTheme.typography.headlineSmall
                         )
                     }
-                    if (!isSignUpPage) {
-                        Text(text = stringResource(R.string.forget_password))
-                    }
-                }
-                Spacer(modifier = Modifier.height(25.dp))
-                Button(
-                    onClick = {
-                        coroutineScope.launch {
-                            if (isSignUpPage) {
-                                viewModel.saveAccount(signUpState = viewModel.uiState.value)
-                            }
-                            viewModel.login(
-                                email = viewModel.uiState.value.email,
-                                password = viewModel.uiState.value.password
-                            )
-                        }
-                        if (viewModel.loginUiState.value.isSuccess) {
-                            onLoginAndSignUpButtonClicked()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth(0.7f)
-                        .sizeIn(minHeight = 41.dp)
-                ) {
+                    Spacer(modifier = Modifier.height(13.dp))
                     Text(
-                        text = onButtonText,
-                        style = MaterialTheme.typography.headlineSmall
+                        text = authSwitchMessage,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.clickable { onAuthSwitchClick() }
                     )
-                }
-                Spacer(modifier = Modifier.height(13.dp))
-                Text(
-                    text = authSwitchMessage,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.clickable { onAuthSwitchClick() }
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = stringResource(R.string.or_continue_with),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.alpha(0.8f)
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Row {
-                    Icon(
-                        painter = painterResource(id = R.drawable.facebook_icons),
-                        contentDescription = stringResource(R.string.facebook_icon),
-                        modifier = Modifier
-                            .size(80.dp)
-                            .padding(end = 8.dp)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(R.string.or_continue_with),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.alpha(0.8f)
                     )
-                    Box(
-                        modifier = Modifier
-                            .width(2.dp)
-                            .height(80.dp)
-                            .background(MaterialTheme.colorScheme.secondary)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row {
+                        Icon(
+                            painter = painterResource(id = R.drawable.facebook_icons),
+                            contentDescription = stringResource(R.string.facebook_icon),
+                            modifier = Modifier
+                                .size(80.dp)
+                                .padding(end = 8.dp)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .width(2.dp)
+                                .height(80.dp)
+                                .background(MaterialTheme.colorScheme.secondary)
 
-                    )
-                    Icon(
-                        painter = painterResource(id = R.drawable.google_icon),
-                        contentDescription = stringResource(R.string.google_icon),
-                        modifier = Modifier
-                            .size(80.dp)
-                            .padding(start = 8.dp)
-                    )
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.google_icon),
+                            contentDescription = stringResource(R.string.google_icon),
+                            modifier = Modifier
+                                .size(80.dp)
+                                .padding(start = 8.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(30.dp))
                 }
-                Spacer(modifier = Modifier.height(30.dp))
             }
-
         }
     }
 }
