@@ -33,13 +33,13 @@ class LoginAndSignUpViewModel(
     private val _loginUiState = MutableStateFlow(UsersUiState())
     val loginUiState : StateFlow<UsersUiState> get() = _loginUiState.asStateFlow()
     private val firebaseAuth: FirebaseAuth = Firebase.auth
-    fun updateEmailTextFieldValue(newValue: String) {
-        _uiState.value = _uiState.value.copy(email = newValue)
-    }
+
     init {
 
         viewModelScope.launch {
+
             userPreferencesRepository.userEmail.collect { savedEmail ->
+                Log.d("aaa",savedEmail.toString())
                 userPreferencesRepository.userPassword.collect { savedPassword ->
                     if (!savedEmail.isNullOrEmpty() && !savedPassword.isNullOrEmpty()) {
                         login(savedEmail, savedPassword)
@@ -52,19 +52,23 @@ class LoginAndSignUpViewModel(
     }
     fun signOut() {
         firebaseAuth.signOut()
-        _loginUiState.value = UsersUiState(email = "", password = "", userid = "", isLoading = false)
+        _loginUiState.value = UsersUiState(
+            email = "", password = "", userid = "", isLoading = false,
+        )
         _uiState.value = LoginAndSignUpUiState(
             email =  "",
             password = "",
             isRememberMeOn = false,
             confirmPassword = "",
-            userName = ""
+            userName = "",
         )
         viewModelScope.launch {
             userPreferencesRepository.saveUserCredentials("", "")
         }
     }
-
+    fun updateEmailTextFieldValue(newValue: String) {
+        _uiState.value = _uiState.value.copy(email = newValue)
+    }
     fun updateUserNameTextFieldValue(newValue: String) {
         _uiState.value = _uiState.value.copy(userName = newValue)
     }
@@ -152,9 +156,8 @@ class LoginAndSignUpViewModel(
                 if (userDocument.exists()) {
                     val userData = userDocument.data
                     val userName = userData?.get("userName") as? String ?: ""
-                    val userEmail = userData?.get("email") as? String ?: ""
                     _loginUiState.value = UsersUiState(
-                        email = userEmail,
+                        email = firebaseUser.email,
                         userName = userName,
                         isSuccess = true,
                         isLoading = false,
@@ -162,7 +165,10 @@ class LoginAndSignUpViewModel(
                     )
                     if (_uiState.value.isRememberMeOn) {
                         viewModelScope.launch {
-                            userPreferencesRepository.saveUserCredentials(userEmail,password)
+                            firebaseUser.email?.let {
+                                userPreferencesRepository.saveUserCredentials(
+                                    it,password)
+                            }
                         }
                     }
                 } else {

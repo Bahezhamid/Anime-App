@@ -2,6 +2,7 @@ package com.example.animeapp
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -42,6 +44,8 @@ import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimePage
 import com.example.animeapp.ui.screens.AnimeChapterScreen.AnimeChaptersScreen
 import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsPage
 import com.example.animeapp.ui.screens.CharactersDetailsPage.CharactersDetailsPage
+import com.example.animeapp.ui.screens.EmailAndPasswordChangePage.EmailAndPasswordChangeScreen
+import com.example.animeapp.ui.screens.EmailAndPasswordChangePage.EmailAndPasswordChangeViewModel
 import com.example.animeapp.ui.screens.HomePage.HomePageViewModel
 import com.example.animeapp.ui.screens.HomePage.HomeScreen
 import com.example.animeapp.ui.screens.LandingPage.LandingPage
@@ -57,8 +61,10 @@ fun AnimeApp(
     navController: NavHostController = rememberNavController(),
     loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory),
     homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    savedAnimeViewModel: SavedAnimeViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    savedAnimeViewModel: SavedAnimeViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    emailAndPasswordChangeViewModel: EmailAndPasswordChangeViewModel = viewModel()
 ) {
+    Log.d("dd", loginAndSignUpViewModel.loginUiState.collectAsState().value.toString())
     NavHost(
         navController = navController,
         startDestination = AnimeScreen.Start.route,
@@ -191,11 +197,14 @@ fun AnimeApp(
             }
         }
         composable(route = AnimeScreen.ProfilePage.route) {
+
             ProfilePage(
                 onHomeClicked = {navController.navigate(AnimeScreen.HomePage.route)},
                 onSavedClicked =  {navController.navigate(AnimeScreen.SavedAnimeScreen.route)},
                 onBookClicked =  {navController.navigate(AnimeScreen.AllAnimeScreen.route)},
                 onUserDateClicked = {navController.navigate(AnimeScreen.UserDetailsPage.route)},
+                onEmailChangeClicked = {navController.navigate(AnimeScreen.EmailChangePage.route)},
+                onPasswordChangeClicked = {navController.navigate(AnimeScreen.PasswordChangePage.route)},
                 onSignOutButtonClicked = {
                     loginAndSignUpViewModel.signOut()
                     navController.navigate(AnimeScreen.Start
@@ -206,13 +215,48 @@ fun AnimeApp(
                     }
                     savedAnimeViewModel.removeSavedAnime()
                 },
-                loginAndSignUpViewModel = loginAndSignUpViewModel
+
+                userData = loginAndSignUpViewModel.loginUiState.collectAsState().value
             )
         }
         composable(route = AnimeScreen.UserDetailsPage.route) {
             UserDetainsScreen(
                 onBackButtonClicked = {navController.navigateUp()},
-                loginAndSignUpViewModel = loginAndSignUpViewModel
+                userData = loginAndSignUpViewModel.loginUiState.collectAsState().value
+            )
+        }
+        composable(route = AnimeScreen.EmailChangePage.route) {
+            EmailAndPasswordChangeScreen(
+                onBackButtonClicked = { navController.navigateUp()},
+                isPasswordChangePage = false,
+                emailAndPasswordChangeViewModel = emailAndPasswordChangeViewModel,
+                onSignOutClicked = {
+                    loginAndSignUpViewModel.signOut()
+                    navController.navigate(AnimeScreen.Start
+                        .route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = true
+                        }
+                    }
+                    savedAnimeViewModel.removeSavedAnime()
+                },
+            )
+        }
+        composable(route = AnimeScreen.PasswordChangePage.route) {
+            EmailAndPasswordChangeScreen(
+                onBackButtonClicked = { navController.navigateUp() },
+                isPasswordChangePage = true ,
+                emailAndPasswordChangeViewModel = emailAndPasswordChangeViewModel,
+                onSignOutClicked = {
+                    loginAndSignUpViewModel.signOut()
+                    navController.navigate(AnimeScreen.Start
+                        .route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = true
+                        }
+                    }
+                    savedAnimeViewModel.removeSavedAnime()
+                },
             )
         }
 

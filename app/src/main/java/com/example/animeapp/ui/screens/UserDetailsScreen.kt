@@ -22,15 +22,14 @@ import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.animeapp.ui.AppViewModelProvider
+import com.example.animeapp.ui.screens.logInAndSignUp.UsersUiState
 
 @Composable
 fun UserDetainsScreen(
     onBackButtonClicked : () -> Unit,
-    loginAndSignUpViewModel: LoginAndSignUpViewModel
+    userData : UsersUiState
 ) {
-    val userDate = loginAndSignUpViewModel.loginUiState.collectAsState()
-
-        Scaffold(
+    Scaffold(
             topBar = {
                 AnimeTopAppBar(
                     title = "",
@@ -70,7 +69,7 @@ fun UserDetainsScreen(
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.height(5.dp))
-                userDate.value.userName?.let {
+                userData.userName?.let {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.titleLarge
@@ -82,7 +81,7 @@ fun UserDetainsScreen(
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.height(5.dp))
-                userDate.value.email?.let {
+                userData.email?.let {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.titleLarge
@@ -94,7 +93,7 @@ fun UserDetainsScreen(
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.height(5.dp))
-                userDate.value.password?.let {
+                userData.password?.let {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.titleLarge

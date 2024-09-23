@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import com.example.animeapp.AnimeBottomAppBar
 import com.example.animeapp.R
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
+import com.example.animeapp.ui.screens.logInAndSignUp.UsersUiState
+import com.google.firebase.firestore.core.UserData
 
 @Composable
 fun ProfilePage(
@@ -44,10 +46,12 @@ fun ProfilePage(
     onBookClicked : () -> Unit,
     onSignOutButtonClicked : () -> Unit,
     onUserDateClicked : () -> Unit,
-    loginAndSignUpViewModel: LoginAndSignUpViewModel
+    onEmailChangeClicked : () -> Unit,
+    onPasswordChangeClicked : () -> Unit,
+    userData: UsersUiState,
 ) {
-    val userData = loginAndSignUpViewModel.loginUiState.collectAsState()
-    Log.d("hi",userData.value.userName.toString())
+
+    Log.d("hi",userData.toString())
     Scaffold(
         bottomBar = {
             AnimeBottomAppBar(
@@ -81,7 +85,7 @@ fun ProfilePage(
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(10.dp))
-            userData.value.userName?.let {
+            userData.userName?.let {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.headlineMedium
@@ -120,7 +124,11 @@ fun ProfilePage(
                 Row(
                     modifier = Modifier
                         .padding(horizontal = 10.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .clickable {
+                            onEmailChangeClicked()
+                        }
+                    ,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
@@ -136,7 +144,11 @@ fun ProfilePage(
                 Row(
                     modifier = Modifier
                         .padding(horizontal = 10.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .clickable {
+                            onPasswordChangeClicked()
+                        }
+                    ,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(

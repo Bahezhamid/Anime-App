@@ -42,10 +42,8 @@ class HomePageViewModel(
     init {
         getAnimeData()
     }
-
     fun updateUserUiState(usersUiState: UsersUiState) {
         _loginUiState.value = usersUiState
-        Log.d("userUiState", _loginUiState.value.toString())
     }
 
     fun updateFavoriteStatus(animeId: Int, userId: String) {
