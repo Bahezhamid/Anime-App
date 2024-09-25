@@ -1,6 +1,7 @@
 package com.example.animeapp.ui.screens.EmailAndPasswordChangePage
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -35,6 +37,7 @@ import com.example.animeapp.R
 import com.example.animeapp.ui.screens.AllAnimeScreen.LoadingScreen
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpTextField
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
+import showSuccessNotification
 
 @Composable
 fun EmailAndPasswordChangeScreen(
@@ -43,7 +46,7 @@ fun EmailAndPasswordChangeScreen(
     onSignOutClicked : () -> Unit,
     emailAndPasswordChangeViewModel: EmailAndPasswordChangeViewModel,
 ) {
-
+    val context = LocalContext.current
     val emailAndPasswordUiState =emailAndPasswordChangeViewModel
         .emailAndPasswordChangeUiState.collectAsState()
     val oldEmailFocusRequester = remember { FocusRequester() }
@@ -53,13 +56,32 @@ fun EmailAndPasswordChangeScreen(
     val oldPasswordFocusRequester = remember { FocusRequester() }
     val newPasswordFocusRequester = remember { FocusRequester() }
     val confirmPasswordFocusRequester = remember { FocusRequester() }
-    Log.d("heloooooooo",emailAndPasswordUiState.value.toString())
-    LaunchedEffect(emailAndPasswordUiState.value.isSuccess, emailAndPasswordUiState.value.isLoading) {
-        if (emailAndPasswordUiState.value.isSuccess && !emailAndPasswordUiState.value.isLoading) {
-            emailAndPasswordChangeViewModel.SignOut()
-            onSignOutClicked()
+    if (emailAndPasswordUiState.value.isSuccess && !emailAndPasswordUiState.value.isLoading) {
+        emailAndPasswordChangeViewModel.SignOut()
+        onSignOutClicked()
+        showSuccessNotification(context,isPasswordChangePage)
+        if(isPasswordChangePage){
+        Toast.makeText(context, "Password changed successfully", Toast.LENGTH_SHORT).show()
+        }
+        else {
+            Toast.makeText(context, "Email changed successfully", Toast.LENGTH_SHORT).show()
         }
     }
+    else if(emailAndPasswordUiState.value.isLoading && !isPasswordChangePage){
+        VerifyEmailAndPasswordPage()
+    }
+    else if(emailAndPasswordUiState.value.isLoading && isPasswordChangePage){
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            LoadingScreen()
+        }
+    }
+    else if(!emailAndPasswordUiState.value.isLoading && !emailAndPasswordUiState.value.isSuccess){
     Scaffold (
         topBar = { AnimeTopAppBar(
             title = "",
@@ -76,10 +98,7 @@ fun EmailAndPasswordChangeScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            if(emailAndPasswordUiState.value.isLoading){
-                LoadingScreen(modifier = Modifier.fillMaxSize())
-            }
-            else {
+
                 Text(
                     text = if (isPasswordChangePage) "Password Change Page" else "Email Change Page",
                     style = MaterialTheme.typography.headlineLarge
@@ -158,7 +177,8 @@ fun EmailAndPasswordChangeScreen(
                             imeAction = ImeAction.Done
                         ),
                         isPassword = isPasswordChangePage,
-                        onImeAction = { /*TODO*/ },
+                        onImeAction = {if(isPasswordChangePage) emailAndPasswordChangeViewModel.updatePassword(emailAndPasswordUiState.value)
+                        else passwordFocusRequester.requestFocus()},
                         isError = if (isPasswordChangePage) emailAndPasswordUiState.value.confirmPasswordError != null
                         else emailAndPasswordUiState.value.confirmEmailError != null,
                         errorMessage = if (isPasswordChangePage) emailAndPasswordUiState.value.confirmPasswordError else emailAndPasswordUiState.value.confirmEmailError
@@ -174,7 +194,7 @@ fun EmailAndPasswordChangeScreen(
                                 imeAction = ImeAction.Done
                             ),
                             isPassword = true,
-                            onImeAction = { /*TODO*/ },
+                            onImeAction = { emailAndPasswordChangeViewModel.updateEmail(emailAndPasswordChangeUiState = emailAndPasswordUiState.value, emailAndPasswordUiState.value.password)},
                             isError = emailAndPasswordUiState.value.passwordError != null,
                             errorMessage = emailAndPasswordUiState.value.passwordError
                         )
@@ -183,17 +203,18 @@ fun EmailAndPasswordChangeScreen(
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
                     onClick = {
-                        emailAndPasswordChangeViewModel
-                        .updateEmail(
-                            emailAndPasswordChangeUiState = emailAndPasswordUiState.value , isPasswordChange = false,
-                            password = emailAndPasswordUiState.value.password
+                        if (isPasswordChangePage) {
+                            emailAndPasswordChangeViewModel.updatePassword(
+                                emailAndPasswordChangeUiState = emailAndPasswordUiState.value,
                             )
-                        if (emailAndPasswordUiState.value.isSuccess && !emailAndPasswordUiState.value.isLoading) {
-                            emailAndPasswordChangeViewModel.SignOut()
-                            onSignOutClicked()
-
+                        } else {
+                            emailAndPasswordChangeViewModel
+                                .updateEmail(
+                                    emailAndPasswordChangeUiState = emailAndPasswordUiState.value,
+                                    password = emailAndPasswordUiState.value.password
+                                )
                         }
-                              }
+                    }
                     ,
                     modifier = Modifier
                         .width(232.dp)
@@ -209,6 +230,7 @@ fun EmailAndPasswordChangeScreen(
                     )
                 }
             }
-        }
+
     }
+}
 }

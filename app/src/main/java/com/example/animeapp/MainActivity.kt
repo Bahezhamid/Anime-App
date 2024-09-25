@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.example.animeapp.ui.screens.EmailAndPasswordChangePage.VerifyEmailAndPasswordPage
 import com.example.animeapp.ui.theme.AnimeAppTheme
 import com.google.firebase.FirebaseApp
 
@@ -14,7 +15,7 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         setContent {
             AnimeAppTheme {
-                AnimeApp()
+               AnimeApp()
             }
         }
     }

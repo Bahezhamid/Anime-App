@@ -1,4 +1,4 @@
-package com.example.animeapp.ui.screens
+package com.example.animeapp.ui.screens.UserDetailsScreen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,15 +21,17 @@ import androidx.compose.ui.draw.clip
 import com.example.animeapp.AnimeTopAppBar
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.animeapp.ui.AppViewModelProvider
 import com.example.animeapp.ui.screens.logInAndSignUp.UsersUiState
 
 @Composable
 fun UserDetainsScreen(
     onBackButtonClicked : () -> Unit,
-    userData : UsersUiState
+    userData : UsersUiState,
+    userDetailsViewModel: UserDetailsViewModel,
 ) {
+    LaunchedEffect(userData.userid) {
+      userDetailsViewModel.getFavoriteCount(userId = userData.userid)
+    }
     Scaffold(
             topBar = {
                 AnimeTopAppBar(
@@ -89,19 +92,7 @@ fun UserDetainsScreen(
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Your Password :",
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Spacer(modifier = Modifier.height(5.dp))
-                userData.password?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = "Your Favorite Anime : 0",
+                    text = "Your Favorite Anime : ${userDetailsViewModel.favoriteCount.collectAsState().value}",
                     style = MaterialTheme.typography.titleLarge
                     )
             }

@@ -3,15 +3,8 @@ package com.example.animeapp.ui.screens.EmailAndPasswordChangePage
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.animeapp.data.AnimeRepository
-import com.example.animeapp.data.UserPreferencesRepository
-import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpUiState
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 class EmailAndPasswordChangeViewModel() : ViewModel() {
     private val _emailAndPasswordChangeUiState = MutableStateFlow(EmailAndPasswordChangeUiState())
     val emailAndPasswordChangeUiState: StateFlow<EmailAndPasswordChangeUiState> get() = _emailAndPasswordChangeUiState.asStateFlow()
@@ -48,7 +40,6 @@ class EmailAndPasswordChangeViewModel() : ViewModel() {
         _emailAndPasswordChangeUiState.value = EmailAndPasswordChangeUiState()
     }
     fun updateEmail(
-        isPasswordChange: Boolean,
         emailAndPasswordChangeUiState: EmailAndPasswordChangeUiState,
         password: String
     ) {
@@ -91,7 +82,7 @@ class EmailAndPasswordChangeViewModel() : ViewModel() {
                         } else {
                             _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(
                                 isLoading = false,
-                                currentEmailError = reauthTask.exception?.message ?: "Reauthentication failed"
+                                passwordError = "Wrong Email Or Password"
                             )
                         }
                     }
@@ -118,35 +109,116 @@ class EmailAndPasswordChangeViewModel() : ViewModel() {
     }
     private fun checkForEmailUpdateOnce(newEmail: String) {
         val user = FirebaseAuth.getInstance().currentUser
-
+        val maxRetries = 7
+        var retryCount = 0
         var isUpdateCompleted = false
         viewModelScope.launch {
-            while (!isUpdateCompleted) {
+            while (!isUpdateCompleted && retryCount < maxRetries) {
                 withContext(Dispatchers.IO) {
                     user?.reload()?.addOnCompleteListener { reloadTask ->
                         if (reloadTask.isSuccessful) {
-                            if (user.email == newEmail && !isUpdateCompleted) {
+                            if (user.email == newEmail) {
+
                                 isUpdateCompleted = true
                                 _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(
                                     isLoading = false,
                                     isSuccess = true,
                                     currentEmailError = "Email successfully updated"
                                 )
+                                Log.d("EmailUpdate", "Email successfully updated")
+                            } else {
+
+                                Log.d("EmailUpdate", "Email not updated yet, retrying...")
                             }
                         } else {
+                            isUpdateCompleted = true
                             _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(
                                 isLoading = false,
                                 isSuccess = true,
-                                currentEmailError = "Failed to reload user data"
                             )
-                            isUpdateCompleted = true
                         }
                     }
                 }
-                delay(10000L)
+
+                retryCount++
+                if (!isUpdateCompleted && retryCount < maxRetries) {
+                    delay(5000L)
+                }
+            }
+
+            if (!isUpdateCompleted) {
+                _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(
+                    isLoading = false,
+                    isSuccess = false,
+                    currentEmailError = "Email failed to update after 30 seconds"
+                )
+                Log.d("EmailUpdate", "Email failed to update after 30 seconds")
             }
         }
     }
+
+    fun updatePassword(
+        emailAndPasswordChangeUiState: EmailAndPasswordChangeUiState,
+    ) {
+        if (validateInput(emailAndPasswordChangeUiState, true)) {
+            _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(isLoading = true)
+
+            val user = FirebaseAuth.getInstance().currentUser
+
+            user?.let {
+                val currentEmail = it.email
+                val currentPassword = emailAndPasswordChangeUiState.oldPassword
+
+                val credential = EmailAuthProvider.getCredential(currentEmail!!, currentPassword)
+
+                it.reauthenticate(credential).addOnCompleteListener { reauthTask ->
+                    if (reauthTask.isSuccessful) {
+                        try {
+                            it.updatePassword(emailAndPasswordChangeUiState.newPassword).addOnCompleteListener { updateTask ->
+                                if (updateTask.isSuccessful) {
+                                    _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(
+                                        isLoading = false,
+                                        isSuccess = true,
+                                        currentPasswordError = "Password successfully updated"
+                                    )
+                                } else {
+                                    _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(
+                                        isLoading = false,
+                                        isSuccess = false,
+                                        currentPasswordError = "Failed to update password"
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(
+                                isLoading = false,
+                                isSuccess = false,
+                                currentPasswordError = e.localizedMessage ?: "Unknown error occurred"
+                            )
+                        }
+                    } else {
+                        _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(
+                            isLoading = false,
+                            currentPasswordError = reauthTask.exception?.message ?: "Reauthentication failed"
+                        )
+                    }
+                }
+            } ?: run {
+                _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(
+                    isLoading = false,
+                    isSuccess = false,
+                    currentPasswordError = "User is not authenticated"
+                )
+            }
+        } else {
+            _emailAndPasswordChangeUiState.value = _emailAndPasswordChangeUiState.value.copy(
+                currentPasswordError = "Invalid input"
+            )
+        }
+    }
+
+
+
 
     private fun validateInput(emailAndPasswordChangeUiState: EmailAndPasswordChangeUiState, iaPasswordChange : Boolean): Boolean {
         if(iaPasswordChange){

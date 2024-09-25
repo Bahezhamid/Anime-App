@@ -51,7 +51,8 @@ import com.example.animeapp.ui.screens.HomePage.HomeScreen
 import com.example.animeapp.ui.screens.LandingPage.LandingPage
 import com.example.animeapp.ui.screens.SavedAnimeScreen.SavedAnimePage
 import com.example.animeapp.ui.screens.SavedAnimeScreen.SavedAnimeViewModel
-import com.example.animeapp.ui.screens.UserDetainsScreen
+import com.example.animeapp.ui.screens.UserDetailsScreen.UserDetailsViewModel
+import com.example.animeapp.ui.screens.UserDetailsScreen.UserDetainsScreen
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpPage
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 
@@ -62,7 +63,8 @@ fun AnimeApp(
     loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory),
     homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory),
     savedAnimeViewModel: SavedAnimeViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    emailAndPasswordChangeViewModel: EmailAndPasswordChangeViewModel = viewModel()
+    emailAndPasswordChangeViewModel: EmailAndPasswordChangeViewModel = viewModel(),
+    userDetailsViewModel: UserDetailsViewModel = viewModel()
 ) {
     Log.d("dd", loginAndSignUpViewModel.loginUiState.collectAsState().value.toString())
     NavHost(
@@ -222,7 +224,8 @@ fun AnimeApp(
         composable(route = AnimeScreen.UserDetailsPage.route) {
             UserDetainsScreen(
                 onBackButtonClicked = {navController.navigateUp()},
-                userData = loginAndSignUpViewModel.loginUiState.collectAsState().value
+                userData = loginAndSignUpViewModel.loginUiState.collectAsState().value,
+                userDetailsViewModel = userDetailsViewModel
             )
         }
         composable(route = AnimeScreen.EmailChangePage.route) {
