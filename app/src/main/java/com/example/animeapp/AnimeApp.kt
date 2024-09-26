@@ -97,6 +97,7 @@ fun AnimeApp(
                 onAuthSwitchClick = { navController.navigate(AnimeScreen.SignUp.route) },
                 onLoginAndSignUpButtonClicked = { navController.navigate(AnimeScreen.HomePage.route) },
                 homePageViewModel = homePageViewModel,
+                onForgetPasswordClicked = {navController.navigate(AnimeScreen.ForgetPasswordPage.route)},
                 viewModel = loginAndSignUpViewModel
             )
         }
@@ -112,6 +113,22 @@ fun AnimeApp(
                 onLoginAndSignUpButtonClicked = { navController.navigate(AnimeScreen.HomePage.route) },
                 homePageViewModel = homePageViewModel,
                 viewModel = loginAndSignUpViewModel
+            )
+        }
+        composable(route = AnimeScreen.ForgetPasswordPage.route) {
+            LoginAndSignUpPage(
+                title = "Forget Password?",
+                description = "Enter your email to receive a password reset link.",
+                isSignUpPage = false ,
+                onButtonText = "Confirm",
+                authSwitchMessage = stringResource(id = R.string.don_t_have_an_account_signup_here),
+                onBackPressed = { navController.navigateUp() },
+                onAuthSwitchClick = { navController.navigate(AnimeScreen.SignUp.route) },
+                onLoginAndSignUpButtonClicked = { /*TODO*/ },
+                viewModel = loginAndSignUpViewModel,
+                isForgetPasswordPage = true,
+                onForgetPasswordButtonClicked = {navController.navigate(AnimeScreen.LogIn.route)},
+                homePageViewModel = homePageViewModel
             )
         }
         composable(route = AnimeScreen.HomePage.route) {

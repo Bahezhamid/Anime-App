@@ -1,5 +1,6 @@
 package com.example.animeapp.ui.screens.logInAndSignUp
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -85,8 +87,12 @@ fun LoginAndSignUpPage(
     onLoginAndSignUpButtonClicked : () -> Unit,
     viewModel: LoginAndSignUpViewModel ,
     homePageViewModel: HomePageViewModel,
+    isForgetPasswordPage : Boolean = false,
+    onForgetPasswordClicked :() -> Unit = {},
+    onForgetPasswordButtonClicked : () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val emailFocusRequester = remember { FocusRequester() }
     val userNameFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
@@ -99,6 +105,13 @@ fun LoginAndSignUpPage(
         if (loginUiState.isSuccess) {
             homePageViewModel.updateUserUiState(loginUiState)
             onLoginAndSignUpButtonClicked()
+        }
+        if(!loginUiState.isLoading && loginUiState.isPasswordResetSent){
+            onForgetPasswordButtonClicked()
+        }
+        if(loginUiState.isPasswordResetSent) {
+            Toast.makeText(context, "Password reset link sent. Check your email.", Toast.LENGTH_SHORT).show()
+            loginUiState.isPasswordResetSent = false
         }
     }
     Scaffold (
@@ -159,15 +172,23 @@ fun LoginAndSignUpPage(
                         },
                         placeHolderValue = stringResource(R.string.email),
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Next
+                            imeAction = if (isForgetPasswordPage)ImeAction.Done else ImeAction.Next
                         ),
                         focusRequester = emailFocusRequester,
                         onImeAction = {
                             if (isSignUpPage) userNameFocusRequester.requestFocus()
+                            else if (isForgetPasswordPage) { keyboardController?.hide()
+                            coroutineScope.launch {
+                                viewModel.forgetPassword(signUpState = viewModel.uiState.value)
+                                if(!loginUiState.isLoading && loginUiState.isPasswordResetSent){
+                                    onForgetPasswordButtonClicked()
+                                }
+                            }
+                                }
                             else passwordFocusRequester.requestFocus()
                         },
                         isError = viewModel.uiState.collectAsState().value.emailError != null,
-                        errorMessage = if (isSignUpPage) viewModel.uiState.collectAsState().value.emailError else null
+                        errorMessage = if (isSignUpPage || isForgetPasswordPage) viewModel.uiState.collectAsState().value.emailError else null
                     )
                     if (isSignUpPage) {
                         Spacer(modifier = Modifier.height(15.dp))
@@ -190,38 +211,40 @@ fun LoginAndSignUpPage(
                         )
                     }
                     Spacer(modifier = Modifier.height(31.dp))
-                    LoginAndSignUpTextField(
-                        textFieldValue = loginAndSignUpUiState.password,
-                        onTextFieldValueChange = { newValue ->
-                            viewModel.updatePasswordTextFieldValue(
-                                newValue
-                            )
-                        },
-                        placeHolderValue = stringResource(R.string.password),
-                        isPassword = true,
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Next
-                        ),
-                        focusRequester = passwordFocusRequester,
-                        onImeAction = {
-                            if (isSignUpPage) confirmPasswordFocusRequester.requestFocus()
-                            else {
-                                keyboardController?.hide()
-                                coroutineScope.launch {
-                                    viewModel.login(
-                                        email = viewModel.uiState.value.email,
-                                        password = viewModel.uiState.value.password
-                                    )
+                    if(!isForgetPasswordPage) {
+                        LoginAndSignUpTextField(
+                            textFieldValue = loginAndSignUpUiState.password,
+                            onTextFieldValueChange = { newValue ->
+                                viewModel.updatePasswordTextFieldValue(
+                                    newValue
+                                )
+                            },
+                            placeHolderValue = stringResource(R.string.password),
+                            isPassword = true,
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                imeAction = ImeAction.Next
+                            ),
+                            focusRequester = passwordFocusRequester,
+                            onImeAction = {
+                                if (isSignUpPage) confirmPasswordFocusRequester.requestFocus()
+                                else {
+                                    keyboardController?.hide()
+                                    coroutineScope.launch {
+                                        viewModel.login(
+                                            email = viewModel.uiState.value.email,
+                                            password = viewModel.uiState.value.password
+                                        )
+                                    }
+                                    if (viewModel.loginUiState.value.isSuccess) {
+                                        onLoginAndSignUpButtonClicked()
+                                    }
                                 }
-                                if (viewModel.loginUiState.value.isSuccess) {
-                                    onLoginAndSignUpButtonClicked()
-                                }
-                            }
-                        },
-                        isError = viewModel.uiState.collectAsState().value.passwordError != null,
-                        errorMessage = if (isSignUpPage) viewModel.uiState.collectAsState().value.passwordError else
-                            viewModel.loginUiState.collectAsState().value.errorMessage
-                    )
+                            },
+                            isError = viewModel.uiState.collectAsState().value.passwordError != null,
+                            errorMessage = if (isSignUpPage) viewModel.uiState.collectAsState().value.passwordError else
+                                viewModel.loginUiState.collectAsState().value.errorMessage
+                        )
+                    }
                     if (isSignUpPage) {
                         Spacer(modifier = Modifier.height(15.dp))
                         LoginAndSignUpTextField(
@@ -254,48 +277,65 @@ fun LoginAndSignUpPage(
                             errorMessage = viewModel.uiState.collectAsState().value.confirmPasswordError
                         )
                     }
+                    if(!isForgetPasswordPage) {
                     Spacer(modifier = Modifier.height(15.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable {
-                                viewModel.updateRememberMeValue(!loginAndSignUpUiState.isRememberMeOn)
-                            }
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Icon(
-                                imageVector = if (loginAndSignUpUiState.isRememberMeOn)
-                                    Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
-                                contentDescription = stringResource(R.string.remember_me_icon),
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = stringResource(R.string.remember_me),
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                        if (!isSignUpPage) {
-                            Text(text = stringResource(R.string.forget_password))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.clickable {
+                                    viewModel.updateRememberMeValue(!loginAndSignUpUiState.isRememberMeOn)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = if (loginAndSignUpUiState.isRememberMeOn)
+                                        Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
+                                    contentDescription = stringResource(R.string.remember_me_icon),
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = stringResource(R.string.remember_me),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            if (!isSignUpPage) {
+                                Text(
+                                    text = stringResource(R.string.forget_password),
+                                    modifier = Modifier.clickable {
+                                        onForgetPasswordClicked()
+                                    }
+                                )
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(25.dp))
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                if (isSignUpPage) {
-                                    viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                                if (isForgetPasswordPage) {
+                                    coroutineScope.launch {
+                                       viewModel.forgetPassword(signUpState = viewModel.uiState.value)
+                                        if(!loginUiState.isLoading && loginUiState.isPasswordResetSent){
+                                            onForgetPasswordButtonClicked()
+                                        }
+                                    }
                                 }
-                                viewModel.login(
-                                    email = viewModel.uiState.value.email,
-                                    password = viewModel.uiState.value.password
-                                )
-                            }
-                            if (viewModel.loginUiState.value.isSuccess) {
-                                onLoginAndSignUpButtonClicked()
+                                else {
+                                    if (isSignUpPage) {
+                                        viewModel.saveAccount(signUpState = viewModel.uiState.value)
+                                    }
+                                    viewModel.login(
+                                        email = viewModel.uiState.value.email,
+                                        password = viewModel.uiState.value.password
+                                    )
+                                }
+                                if (viewModel.loginUiState.value.isSuccess) {
+                                    onLoginAndSignUpButtonClicked()
+                                }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(

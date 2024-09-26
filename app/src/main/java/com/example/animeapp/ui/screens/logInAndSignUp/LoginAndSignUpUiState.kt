@@ -8,5 +8,6 @@ data class LoginAndSignUpUiState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
-    val userNameError : String? = null
+    val userNameError : String? = null,
+
 )

@@ -39,7 +39,6 @@ class LoginAndSignUpViewModel(
         viewModelScope.launch {
 
             userPreferencesRepository.userEmail.collect { savedEmail ->
-                Log.d("aaa",savedEmail.toString())
                 userPreferencesRepository.userPassword.collect { savedPassword ->
                     if (!savedEmail.isNullOrEmpty() && !savedPassword.isNullOrEmpty()) {
                         login(savedEmail, savedPassword)
@@ -52,9 +51,7 @@ class LoginAndSignUpViewModel(
     }
     fun signOut() {
         firebaseAuth.signOut()
-        _loginUiState.value = UsersUiState(
-            email = "", password = "", userid = "", isLoading = false,
-        )
+        _loginUiState.value = UsersUiState()
         _uiState.value = LoginAndSignUpUiState(
             email =  "",
             password = "",
@@ -193,40 +190,79 @@ class LoginAndSignUpViewModel(
             )
         }
     }
-    private fun validateInput(signUpState: LoginAndSignUpUiState): Boolean {
+    fun forgetPassword(signUpState: LoginAndSignUpUiState) {
+        if(  validateInput(signUpState = signUpState, isForgetPassword = true)) {
+            _loginUiState.value = _loginUiState.value.copy(
+                isLoading = true
+            )
+            FirebaseAuth.getInstance().sendPasswordResetEmail(signUpState.email)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        _loginUiState.value = _loginUiState.value.copy(
+                            isLoading = false,
+                            isPasswordResetSent = true
+                        )
+
+                    } else {
+                        _loginUiState.value = _loginUiState.value.copy(
+                            isSuccess = false,
+                            isLoading = false,
+                            isPasswordResetSent = false,
+                            errorMessage = "Wrong Email"
+                        )
+                    }
+                }
+        }
+    }
+    private fun validateInput(signUpState: LoginAndSignUpUiState ,isForgetPassword : Boolean = false): Boolean {
+
         val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
         val passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#\$%^&+=])(?=\\S+\$).{8,}\$"
+        if (isForgetPassword) {
+            val isEmailValid = signUpState.email.matches(Regex(emailPattern))
+            var emailError : String? = null
+            if (!isEmailValid) {
+                emailError = "Invalid email format."
+            }
+            _uiState.value = _uiState.value.copy(
+                emailError = emailError,
+            )
 
-        val isEmailValid = signUpState.email.matches(Regex(emailPattern))
-        val isPasswordValid = signUpState.password.matches(Regex(passwordPattern))
-        val doPasswordsMatch = signUpState.password == signUpState.confirmPassword
-        var emailError: String? = null
-        var passwordError: String? = null
-        var confirmPasswordError: String? = null
-        var emptyUserName : String? = null
-        if (!isEmailValid) {
-            emailError = "Invalid email format."
+            return isEmailValid
+        } else {
+            val isEmailValid = signUpState.email.matches(Regex(emailPattern))
+            val isPasswordValid = signUpState.password.matches(Regex(passwordPattern))
+            val doPasswordsMatch = signUpState.password == signUpState.confirmPassword
+
+
+            var emailError: String? = null
+            var passwordError: String? = null
+            var confirmPasswordError: String? = null
+            var emptyUserName: String? = null
+            if (!isEmailValid) {
+                emailError = "Invalid email format."
+            }
+
+            if (!isPasswordValid) {
+                passwordError =
+                    "Password must be at least 8 characters, include an upper case letter, a number, and a special character."
+            }
+
+            if (!doPasswordsMatch) {
+                confirmPasswordError = "Passwords do not match."
+            }
+            if (signUpState.userName == "") {
+                emptyUserName = "Please Enter Your Username."
+            }
+            _uiState.value = _uiState.value.copy(
+                emailError = emailError,
+                passwordError = passwordError,
+                confirmPasswordError = confirmPasswordError,
+                userNameError = emptyUserName
+            )
+
+            return isEmailValid && isPasswordValid && doPasswordsMatch && signUpState.userName != ""
         }
 
-        if (!isPasswordValid) {
-            passwordError = "Password must be at least 8 characters, include an upper case letter, a number, and a special character."
-        }
-
-        if (!doPasswordsMatch) {
-            confirmPasswordError = "Passwords do not match."
-        }
-        if(signUpState.userName==""){
-            emptyUserName = "Please Enter Your Username."
-        }
-        _uiState.value = _uiState.value.copy(
-            emailError = emailError,
-            passwordError = passwordError,
-            confirmPasswordError = confirmPasswordError,
-            userNameError = emptyUserName
-        )
-
-        return isEmailValid && isPasswordValid && doPasswordsMatch && signUpState.userName !=""
     }
-
-
 }
