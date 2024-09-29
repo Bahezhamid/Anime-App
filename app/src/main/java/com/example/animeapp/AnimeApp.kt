@@ -9,8 +9,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.VideoLibrary
@@ -28,6 +32,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,6 +47,7 @@ import com.example.animeapp.ui.AppViewModelProvider
 import com.example.animeapp.ui.screens.ProfilePage
 import com.example.animeapp.ui.navigation.AnimeScreen
 import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimePage
+import com.example.animeapp.ui.screens.AllAnimeScreen.AllAnimeViewScreenModel
 import com.example.animeapp.ui.screens.AnimeChapterScreen.AnimeChaptersScreen
 import com.example.animeapp.ui.screens.AnimeDetailsPage.AnimeDetailsPage
 import com.example.animeapp.ui.screens.CharactersDetailsPage.CharactersDetailsPage
@@ -56,16 +63,17 @@ import com.example.animeapp.ui.screens.UserDetailsScreen.UserDetainsScreen
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpPage
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 
-
 @Composable
 fun AnimeApp(
     navController: NavHostController = rememberNavController(),
     loginAndSignUpViewModel: LoginAndSignUpViewModel = viewModel(factory = AppViewModelProvider.Factory),
     homePageViewModel: HomePageViewModel = viewModel(factory = AppViewModelProvider.Factory),
     savedAnimeViewModel: SavedAnimeViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    allAnimeViewScreenModel: AllAnimeViewScreenModel = viewModel(factory = AppViewModelProvider.Factory),
     emailAndPasswordChangeViewModel: EmailAndPasswordChangeViewModel = viewModel(),
     userDetailsViewModel: UserDetailsViewModel = viewModel()
 ) {
+
     Log.d("dd", loginAndSignUpViewModel.loginUiState.collectAsState().value.toString())
     NavHost(
         navController = navController,
@@ -186,11 +194,12 @@ fun AnimeApp(
         composable(route = AnimeScreen.AllAnimeScreen.route) {
             AllAnimePage(
                 onHomeButtonClicked = {navController.navigate(AnimeScreen.HomePage.route)},
-                onSavedButton = {navController.navigate(AnimeScreen.SavedAnimeScreen.route)},
+                onSavedButtonClicked = {navController.navigate(AnimeScreen.SavedAnimeScreen.route)},
                 onProfileClicked = {navController.navigate(AnimeScreen.ProfilePage.route)},
                 onAnimeClicked = {animeId->
                     navController.navigate("animeDetails/$animeId")
-                }
+                },
+                allAnimeViewScreenModel = allAnimeViewScreenModel,
             )
         }
         composable(route = AnimeScreen.CharacterDetailsPage.route) {  backStackEntry ->
@@ -283,57 +292,96 @@ fun AnimeApp(
     }
 }
 
-
 @Composable
-
-fun AnimeBottomAppBar(
+fun AnimeBottomNavigationBar(
+    selectedTab: BottomNavItem,
+    onTabSelected: (BottomNavItem) -> Unit,
     onHomeClick: () -> Unit,
     onSavedClick: () -> Unit,
     onBookClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
-    BottomAppBar(
-        tonalElevation = 8.dp,
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        containerColor = MaterialTheme.colorScheme.primary,
+    BottomNavigation(
+        backgroundColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        elevation = 8.dp,
+
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight(),
-        contentColor = MaterialTheme.colorScheme.onPrimary
+            .wrapContentHeight()
+            .navigationBarsPadding()
     ) {
-        Spacer(modifier = Modifier.weight(0.5f))
-        IconButton(onClick = onHomeClick) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_home),
-                contentDescription = "Home",
-                modifier = Modifier.size(60.dp)
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = onSavedClick) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_saved),
-                contentDescription = "Saved",
-                modifier = Modifier.size(60.dp)
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = onBookClick) {
-            Icon(imageVector = Icons.Filled.VideoLibrary,
-                contentDescription = "Anime And Manga",
-                modifier = Modifier.size(60.dp)
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = onProfileClick) {
-            Icon(imageVector = Icons.Filled.Person,
-                contentDescription = "Profile",
-                modifier = Modifier.size(60.dp)
-            )
-        }
-        Spacer(modifier = Modifier.weight(0.5f))
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_home),
+                    contentDescription = "Home",
+                    modifier = Modifier.size(25.dp)
+                        .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Home) 1f else 0.5f),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            },
+            selected = selectedTab == BottomNavItem.Home,
+            onClick = {
+                onTabSelected(BottomNavItem.Home)
+                onHomeClick()
+            }
+        )
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_saved),
+                    contentDescription = "Saved",
+                    modifier = Modifier.size(25.dp)
+                        .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Saved) 1f else 0.5f),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            },
+            selected = selectedTab == BottomNavItem.Saved,
+            onClick = {
+                onTabSelected(BottomNavItem.Saved)
+                onSavedClick()
+            }
+        )
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.VideoLibrary,
+                    contentDescription = "Anime And Manga",
+                    modifier = Modifier.size(25.dp)
+                        .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Book) 1f else 0.5f),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            },
+            selected = selectedTab == BottomNavItem.Book,
+            onClick = {
+                onTabSelected(BottomNavItem.Book)
+                onBookClick()
+            }
+        )
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = "Profile",
+                    modifier = Modifier.size(25.dp)
+                        .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Profile) 1f else 0.5f),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            },
+            selected = selectedTab == BottomNavItem.Profile,
+            onClick = {
+                onTabSelected(BottomNavItem.Profile)
+                onProfileClick()
+            }
+        )
     }
 }
+
+enum class BottomNavItem {
+    Home, Saved, Book, Profile
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -348,7 +396,8 @@ fun AnimeTopAppBar(
         title = {
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier .padding(start = 10.dp)
             )
         },
         navigationIcon = {
@@ -357,7 +406,8 @@ fun AnimeTopAppBar(
                     Icon(
                         imageVector = Icons.Outlined.ArrowBack,
                         contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onPrimary
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(start = 10.dp)
                     )
                 }
             }
@@ -368,16 +418,19 @@ fun AnimeTopAppBar(
                 imageVector = Icons.Outlined.Search,
                 contentDescription = "Search",
                 tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(50.dp)
+                modifier = Modifier
+                    .padding(end = 10.dp)
+                    .size(25.dp)
+
             )
                 }
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = backGroundColor
-        )
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
     )
 }
 private fun shareAnime(context: Context, subject: String, animeDetails: String, link: String) {

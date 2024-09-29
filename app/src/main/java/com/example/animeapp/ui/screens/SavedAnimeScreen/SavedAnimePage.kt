@@ -28,8 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.animeapp.AnimeBottomAppBar
+import com.example.animeapp.AnimeBottomNavigationBar
 import com.example.animeapp.AnimeTopAppBar
+import com.example.animeapp.BottomNavItem
 import com.example.animeapp.R
 import com.example.animeapp.ui.screens.HomePage.AllAnimeScreen
 import com.example.animeapp.ui.screens.HomePage.AnimeCard
@@ -57,13 +58,16 @@ fun SavedAnimePage (
             AnimeTopAppBar(title = "My List")
         },
         bottomBar = {
-            AnimeBottomAppBar(
+            AnimeBottomNavigationBar(
+                selectedTab = BottomNavItem.Saved,
+                onTabSelected = { BottomNavItem.Saved},
                 onHomeClick = onHomeClicked,
                 onSavedClick = {},
                 onBookClick = onBookClicked,
                 onProfileClick = onProfileClicked
             )
-        }
+
+        },
     ) { innerPadding ->
 
         Column(

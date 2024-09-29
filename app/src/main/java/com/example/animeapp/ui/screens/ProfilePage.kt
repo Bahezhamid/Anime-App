@@ -33,7 +33,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.animeapp.AnimeBottomAppBar
+import com.example.animeapp.AnimeBottomNavigationBar
+import com.example.animeapp.BottomNavItem
 import com.example.animeapp.R
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 import com.example.animeapp.ui.screens.logInAndSignUp.UsersUiState
@@ -54,7 +55,9 @@ fun ProfilePage(
     Log.d("hi",userData.toString())
     Scaffold(
         bottomBar = {
-            AnimeBottomAppBar(
+            AnimeBottomNavigationBar(
+                selectedTab = BottomNavItem.Profile,
+                onTabSelected = { BottomNavItem.Profile},
                 onHomeClick = onHomeClicked,
                 onSavedClick = onSavedClicked,
                 onBookClick = onBookClicked,
@@ -64,9 +67,10 @@ fun ProfilePage(
     ) { innerPadding ->
         Column(
             modifier = Modifier
+                .padding(bottom = innerPadding.calculateBottomPadding())
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.primary)
-                .padding(innerPadding)
+
             ,
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally

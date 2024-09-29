@@ -75,6 +75,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation (libs.androidx.material.icons.extended)
 
+    //matrial3
+    implementation (libs.androidx.material)
+    implementation (libs.material3)
+
     // datastore
     implementation(libs.androidx.datastore.preferences)
 

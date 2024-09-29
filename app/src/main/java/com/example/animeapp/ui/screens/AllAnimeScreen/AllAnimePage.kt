@@ -31,9 +31,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.animeapp.AnimeBottomAppBar
+import com.example.animeapp.AnimeBottomNavigationBar
 import com.example.animeapp.AnimeTopAppBar
+import com.example.animeapp.BottomNavItem
 import com.example.animeapp.R
 import com.example.animeapp.model.AllGenres
 import com.example.animeapp.ui.AppViewModelProvider
@@ -41,9 +41,9 @@ import com.example.animeapp.ui.screens.HomePage.AnimeCard
 
 @Composable
 fun AllAnimePage(
-    allAnimeViewScreenModel: AllAnimeViewScreenModel = viewModel(factory = AppViewModelProvider.Factory),
+  allAnimeViewScreenModel: AllAnimeViewScreenModel,
     onHomeButtonClicked : () -> Unit,
-    onSavedButton : () -> Unit,
+    onSavedButtonClicked : () -> Unit,
     onProfileClicked : () -> Unit,
     onAnimeClicked : (Int) -> Unit
 
@@ -55,13 +55,16 @@ fun AllAnimePage(
             AnimeTopAppBar(title = "Browse")
         },
         bottomBar = {
-            AnimeBottomAppBar(
+            AnimeBottomNavigationBar(
+                selectedTab = BottomNavItem.Book,
+                onTabSelected = { BottomNavItem.Book},
                 onHomeClick = onHomeButtonClicked,
-                onSavedClick = onSavedButton,
+                onSavedClick = onSavedButtonClicked,
                 onBookClick = {},
                 onProfileClick = onProfileClicked
             )
-        }
+
+        },
     ) { innerPadding ->
     Column (
         modifier = Modifier
