@@ -43,7 +43,6 @@ class AllAnimeViewScreenModel (private val animeDataRepository: AnimeDataReposit
                 _allGenresUiState.value = AllGenreUiState.Loading
                 val genres = animeDataRepository.getAllGenres()
                 _allGenresUiState.value = AllGenreUiState.Success(genres)
-
                 _allSelectedAnimeByGenre.value = AllAnimeByGenreUiState.Loading
                 val fetchedAnimeData = animeDataRepository.getAnimeData(2)?.data ?: emptyList()
                 allAnimeData = fetchedAnimeData.filterNotNull()

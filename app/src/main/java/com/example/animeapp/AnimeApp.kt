@@ -5,6 +5,8 @@ import android.content.Intent
 import android.util.Log
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
@@ -31,6 +34,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -301,81 +306,81 @@ fun AnimeBottomNavigationBar(
     onBookClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
-    BottomNavigation(
-        backgroundColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-        elevation = 8.dp,
+        BottomNavigation(
+            backgroundColor = MaterialTheme.colorScheme.secondary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            elevation = 8.dp,
 
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .navigationBarsPadding()
-    ) {
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_home),
-                    contentDescription = "Home",
-                    modifier = Modifier.size(25.dp)
-                        .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Home) 1f else 0.5f),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            },
-            selected = selectedTab == BottomNavItem.Home,
-            onClick = {
-                onTabSelected(BottomNavItem.Home)
-                onHomeClick()
-            }
-        )
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_saved),
-                    contentDescription = "Saved",
-                    modifier = Modifier.size(25.dp)
-                        .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Saved) 1f else 0.5f),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            },
-            selected = selectedTab == BottomNavItem.Saved,
-            onClick = {
-                onTabSelected(BottomNavItem.Saved)
-                onSavedClick()
-            }
-        )
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.VideoLibrary,
-                    contentDescription = "Anime And Manga",
-                    modifier = Modifier.size(25.dp)
-                        .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Book) 1f else 0.5f),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            },
-            selected = selectedTab == BottomNavItem.Book,
-            onClick = {
-                onTabSelected(BottomNavItem.Book)
-                onBookClick()
-            }
-        )
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = "Profile",
-                    modifier = Modifier.size(25.dp)
-                        .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Profile) 1f else 0.5f),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            },
-            selected = selectedTab == BottomNavItem.Profile,
-            onClick = {
-                onTabSelected(BottomNavItem.Profile)
-                onProfileClick()
-            }
-        )
-    }
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .navigationBarsPadding()
+        ) {
+            BottomNavigationItem(
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_home),
+                        contentDescription = "Home",
+                        modifier = Modifier.size(25.dp)
+                            .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Home) 1f else 0.5f),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                selected = selectedTab == BottomNavItem.Home,
+                onClick = {
+                    onTabSelected(BottomNavItem.Home)
+                    onHomeClick()
+                }
+            )
+            BottomNavigationItem(
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_saved),
+                        contentDescription = "Saved",
+                        modifier = Modifier.size(25.dp)
+                            .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Saved) 1f else 0.5f),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                selected = selectedTab == BottomNavItem.Saved,
+                onClick = {
+                    onTabSelected(BottomNavItem.Saved)
+                    onSavedClick()
+                }
+            )
+            BottomNavigationItem(
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.VideoLibrary,
+                        contentDescription = "Anime And Manga",
+                        modifier = Modifier.size(25.dp)
+                            .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Book) 1f else 0.5f),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                selected = selectedTab == BottomNavItem.Book,
+                onClick = {
+                    onTabSelected(BottomNavItem.Book)
+                    onBookClick()
+                }
+            )
+            BottomNavigationItem(
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.Person,
+                        contentDescription = "Profile",
+                        modifier = Modifier.size(25.dp)
+                            .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Profile) 1f else 0.5f),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                selected = selectedTab == BottomNavItem.Profile,
+                onClick = {
+                    onTabSelected(BottomNavItem.Profile)
+                    onProfileClick()
+                }
+            )
+        }
 }
 
 enum class BottomNavItem {
@@ -390,48 +395,49 @@ fun AnimeTopAppBar(
     title: String,
     isBackButton: Boolean = false,
     onBackButtonClicked : () -> Unit ={},
-    backGroundColor : Color = MaterialTheme.colorScheme.primary,
+    backGroundColor : Color = MaterialTheme.colorScheme.secondary,
 ) {
-    TopAppBar(
-        title = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier .padding(start = 10.dp)
-            )
-        },
-        navigationIcon = {
-            if (isBackButton) {
-                IconButton(onClick = onBackButtonClicked) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 10.dp)
+                )
+            },
+            navigationIcon = {
+                if (isBackButton) {
+                    IconButton(onClick = onBackButtonClicked) {
+                        Icon(
+                            imageVector = Icons.Outlined.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(start = 10.dp)
+                        )
+                    }
+                }
+            },
+            actions = {
+                if (!isBackButton) {
                     Icon(
-                        imageVector = Icons.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = "Search",
                         tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(start = 10.dp)
+                        modifier = Modifier
+                            .padding(end = 10.dp)
+                            .size(25.dp)
+
                     )
                 }
-            }
-        },
-        actions = {
-            if(!isBackButton){
-            Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = "Search",
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .padding(end = 10.dp)
-                    .size(25.dp)
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = backGroundColor
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
 
-            )
-                }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = backGroundColor
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-    )
+        )
 }
 private fun shareAnime(context: Context, subject: String, animeDetails: String, link: String) {
     val shareText = "$animeDetails\n\nCheck this out: $link"

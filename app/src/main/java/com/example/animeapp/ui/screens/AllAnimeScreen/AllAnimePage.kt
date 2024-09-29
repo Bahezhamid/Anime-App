@@ -3,9 +3,11 @@ package com.example.animeapp.ui.screens.AllAnimeScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -86,7 +89,8 @@ fun AllAnimePage(
                         }
                     },
                     allAnimeSelectedByGenre = allSelectedAnimeByGenreState,
-                    onAnimeClicked = onAnimeClicked
+                    onAnimeClicked = onAnimeClicked,
+                    allAnimeSelected = {allAnimeViewScreenModel.fetchAllData()}
                 )
                 }
             is AllGenreUiState.Error -> ErrorScreen(
@@ -130,28 +134,39 @@ fun ErrorScreen(retryAction: () -> Unit,modifier: Modifier = Modifier) {
 @Composable
 fun AllAnimeScreen(
     allGenres: AllGenres?,
+    allAnimeSelected : () -> Unit,
     onGenreClicked: (String?) -> Unit,
     allAnimeSelectedByGenre: AllAnimeByGenreUiState,
     onAnimeClicked: (Int) -> Unit,
     ) {
-    var selectedGenre by remember { mutableStateOf<String?>(null) }
+    var selectedGenre by remember { mutableStateOf<String?>("All") }
 
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        allGenres?.data?.let {
-            items(it.filterNotNull()) { genre ->
-                GenreChip(
-                    genre = genre.name,
-                    isSelected = selectedGenre == genre.name,
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.background(MaterialTheme.colorScheme.secondary)
+        ) {
+            item {
+                GenreChip(genre = "All",
+                    isSelected = selectedGenre == "All",
                     onClick = {
-                        selectedGenre = genre.name
-                        onGenreClicked(selectedGenre)
+                        selectedGenre = "All"
+                        allAnimeSelected()
                     }
                 )
             }
-        }
+            allGenres?.data?.let {
+                items(it) { genre ->
+                    GenreChip(
+                        genre = genre.name,
+                        isSelected = selectedGenre == genre.name,
+                        onClick = {
+                            selectedGenre = genre.name
+                            onGenreClicked(selectedGenre)
+                        }
+                    )
+                }
+            }
     }
     when(allAnimeSelectedByGenre) {
         is AllAnimeByGenreUiState.Loading -> LoadingScreen(
@@ -182,7 +197,7 @@ fun AllAnimeScreen(
                         .fillMaxSize(),
                     contentPadding = PaddingValues(
                         start = 10.dp,
-                        top = 10.dp,
+                        top = 20.dp,
                         end = 0.dp,
                         bottom = 10.dp,
                     ),
@@ -209,7 +224,7 @@ fun GenreChip(
     onClick: () -> Unit)
 {
     val backgroundColor = if (isSelected) {
-        MaterialTheme.colorScheme.secondary
+        MaterialTheme.colorScheme.primary
     } else {
        Color.Transparent
     }

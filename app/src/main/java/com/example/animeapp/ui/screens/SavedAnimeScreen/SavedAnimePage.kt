@@ -26,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.animeapp.AnimeBottomNavigationBar
@@ -55,7 +56,9 @@ fun SavedAnimePage (
     }
     Scaffold(
         topBar = {
-            AnimeTopAppBar(title = "My List")
+            AnimeTopAppBar(
+                title = "My List",
+            )
         },
         bottomBar = {
             AnimeBottomNavigationBar(
@@ -82,7 +85,8 @@ fun SavedAnimePage (
                 is SavedAnimeUiState.Success -> SavedAnimeScreen(
                     savedAnimeViewModel = savedAnimeViewModel,
                     onCreateNewListClicked = onCreateNewListClicked,
-                    onAnimeClicked = onAnimeClicked
+                    onAnimeClicked = onAnimeClicked,
+                    backGroundColor = MaterialTheme.colorScheme.primary
                 )
                 is SavedAnimeUiState.Error -> ErrorScreen(
                     { savedAnimeViewModel.getAllSavedAnime(userId) },
@@ -100,13 +104,14 @@ fun SavedAnimeScreen(
     savedAnimeViewModel: SavedAnimeViewModel,
     onAnimeClicked : (Int) -> Unit,
     onCreateNewListClicked : () -> Unit,
+    backGroundColor : Color,
 ) {
     val allSavedAnime =   (savedAnimeViewModel.savedAnimeUiState.collectAsState().value as SavedAnimeUiState.Success).savedAnimeData
     if(allSavedAnime.isNullOrEmpty()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primary)
+                .background(backGroundColor)
                 .padding(start = 26.dp, end = 26.dp, top = 26.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -158,7 +163,7 @@ fun SavedAnimeScreen(
             ,
             contentPadding = PaddingValues(
                 start = 10.dp,
-                top = 10.dp,
+                top = 20.dp,
                 end = 0.dp,
                 bottom = 10.dp,
             ),

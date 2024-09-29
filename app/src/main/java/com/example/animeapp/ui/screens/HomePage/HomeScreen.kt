@@ -50,6 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -196,7 +197,8 @@ fun AllAnimeScreen(
                 )
                 AnimeTopAppBar(
                     title = "",
-                    backGroundColor = Color.Transparent)
+                    backGroundColor = Color.Transparent,
+                )
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -349,7 +351,8 @@ fun AnimeCard(
     animeId : Int?,
     animeTitle: String?,
     animePoster : String?,
-    onAnimeClicked: (Int) -> Unit
+    onAnimeClicked: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column (
         modifier = Modifier
@@ -385,6 +388,8 @@ fun AnimeCard(
             Text(
                 text = animeTitle,
                 style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
