@@ -24,4 +24,10 @@ interface AnimeApiService {
     suspend fun getAnimeChapters(@Path("id") id : Int,@Query("page") page : Int) : AnimeChapters
     @GET("characters/{id}/full")
     suspend fun getCharactersData(@Path("id") id : Int) : CharactersAllData
+    @GET("anime")
+    suspend fun getAnimeByScore(
+        @Query("min_score") minScore: Int,
+        @Query("order_by") orderBy: String = "rank",
+        @Query("limit") limit: Int = 10
+    ): AnimeData
 }

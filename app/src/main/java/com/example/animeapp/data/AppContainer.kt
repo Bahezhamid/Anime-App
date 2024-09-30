@@ -20,9 +20,9 @@ class AppDataContainer(private val context: Context) : AppContainer {
             AnimeDatabase.getDatabase(context).favoriteDao())
     }
     private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(40, TimeUnit.SECONDS)
+        .writeTimeout(40, TimeUnit.SECONDS)
+        .readTimeout(40, TimeUnit.SECONDS)
         .build()
     private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(baseUrl)

@@ -17,6 +17,7 @@ interface AnimeDataRepository {
     suspend fun getAllCharacters(id : Int) : AnimeCharacters?
     suspend fun getAnimeChapters(id : Int, page: Int) : AnimeChapters?
     suspend fun getAllCharactersData(id : Int) : CharactersAllData
+    suspend fun getAnimeByScore(minScore : Int) : AnimeData?
 }
 
 class NetworkAnimeDataRepository(
@@ -36,10 +37,10 @@ class NetworkAnimeDataRepository(
             data = allAnimeData
         )
     }
-
     override suspend fun getAnimeDataById(id: Int): AnimeDataById? = animeApiService.getAnimeDataById(id)
     override suspend fun getAllGenres(): AllGenres? = animeApiService.getAllGenres()
     override suspend fun getAllCharacters(id: Int): AnimeCharacters? = animeApiService.getCharacters(id = id)
     override suspend fun getAnimeChapters(id: Int, page: Int): AnimeChapters = animeApiService.getAnimeChapters(id = id,page = page)
     override suspend fun getAllCharactersData(id: Int): CharactersAllData =animeApiService.getCharactersData(id= id)
+    override suspend fun getAnimeByScore(minScore: Int): AnimeData = animeApiService.getAnimeByScore(minScore=minScore)
 }

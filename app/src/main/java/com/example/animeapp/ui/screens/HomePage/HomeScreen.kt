@@ -69,7 +69,6 @@ import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpViewModel
 @Composable
 fun HomeScreen(
     homePageViewModel: HomePageViewModel,
-    loginAndSignUpViewModel: LoginAndSignUpViewModel,
     onAnimeClicked : (Int) -> Unit,
     onSavedClicked : () -> Unit,
     onBookClicked : () -> Unit,
@@ -331,7 +330,7 @@ fun AllAnimeScreen(
         item(
             span = { GridItemSpan(3) }
         ) {
-            Text(text = "Free To Watch", style = MaterialTheme.typography.headlineMedium)
+            Text(text = "Top Ten Anime", style = MaterialTheme.typography.headlineMedium)
         }
         allAnimeData?.data?.let {
             items(it.filterNotNull()) { anime ->
@@ -354,6 +353,7 @@ fun AnimeCard(
     onAnimeClicked: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+
     Column (
         modifier = Modifier
             .padding(end = 10.dp, bottom = 10.dp)

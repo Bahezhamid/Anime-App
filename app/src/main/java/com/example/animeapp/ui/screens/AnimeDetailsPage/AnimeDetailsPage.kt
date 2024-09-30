@@ -1,12 +1,15 @@
 package com.example.animeapp.ui.screens.AnimeDetailsPage
 
+import android.net.Uri
 import android.util.Log
+import android.webkit.WebView
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,9 +32,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,10 +56,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -156,23 +163,40 @@ fun AnimeDetailsScreen(
     val animePoster = (allAnimeDetails?.data?.trailer?.images?.largeImageUrl
         ?.takeIf { it.isNotBlank() }
         ?: allAnimeDetails?.data?.images?.jpg?.largeImageUrl)
-    AsyncImage(
-        model = ImageRequest
-            .Builder(context = LocalContext.current)
-            .data(animePoster)
-            .crossfade(true)
-            .build(),
-        contentDescription = "poster",
-        modifier = Modifier
-            .padding(horizontal = 19.dp)
-            .fillMaxWidth()
-            .heightIn(min = 120.dp, max = 198.dp)
-            .clip(RoundedCornerShape(10.dp)),
-        contentScale = ContentScale.Crop,
-        error = painterResource(id = R.drawable.ic_broken_image),
-        placeholder = painterResource(id = R.drawable.loading_img)
-    )
-
+    val uriHandler = LocalUriHandler.current
+    val urlToOpen = allAnimeDetails?.data?.trailer?.url
+    Box(modifier = Modifier
+        .padding(horizontal = 19.dp)
+        .fillMaxWidth()
+        .heightIn(min = 120.dp, max = 198.dp)
+        .clip(RoundedCornerShape(10.dp))
+        .clickable(enabled = !urlToOpen.isNullOrEmpty()) {
+            uriHandler.openUri(
+                Uri.parse(urlToOpen).toString()
+            )
+        }) {
+        AsyncImage(
+            model = ImageRequest
+                .Builder(context = LocalContext.current)
+                .data(animePoster)
+                .crossfade(true)
+                .build(),
+            contentDescription = "poster", 
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            error = painterResource(id = R.drawable.ic_broken_image),
+            placeholder = painterResource(id = R.drawable.loading_img)
+        )
+        if(!urlToOpen.isNullOrEmpty()) {
+            Icon( imageVector = Icons.Default.PlayArrow,
+                contentDescription = "Play Icon",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(64.dp)
+                    .align(Alignment.Center))
+        }
+    }
+   
     Spacer(modifier = Modifier.height(15.dp))
 
     allAnimeDetails?.data?.titleEnglish?.let {
@@ -345,7 +369,8 @@ fun IconsFunction(
             .clickable {
                 if (isShareButton) {
                     allAnimeDetails?.data?.url?.let {
-                        onShareButtonClicked("Sharing Anime" , animeSharingDetails ,
+                        onShareButtonClicked(
+                            "Sharing Anime", animeSharingDetails,
                             it
                         )
                     }

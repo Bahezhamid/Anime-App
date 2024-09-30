@@ -63,7 +63,7 @@ class HomePageViewModel(
         viewModelScope.launch {
             _uiState.value = AnimeDataUiState.Loading
             try {
-                val result = animeDataRepository.getAnimeData(1)
+                val result = animeDataRepository.getAnimeByScore(minScore = 9)
                 _uiState.value = AnimeDataUiState.Success(result)
 
                 val animeId = (result?.data?.firstOrNull()?.malId) ?: return@launch

@@ -76,9 +76,10 @@ fun CharactersDetailsPage(
 
         Column(
             modifier = Modifier
+                .padding(innerPadding)
                 .fillMaxSize()
                 .background(color = MaterialTheme.colorScheme.primary)
-                .padding(innerPadding)
+
             ,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -116,7 +117,6 @@ fun CharacterDetailsScreen(
     LazyColumn(
         modifier = modifier,
     ) {
-
         item {
             Column(
                 modifier = Modifier

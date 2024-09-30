@@ -159,7 +159,6 @@ fun AnimeApp(
                     navController.navigate("animeDetails/$animeId")
                 },
                 homePageViewModel = homePageViewModel,
-                loginAndSignUpViewModel = loginAndSignUpViewModel,
 
             )
         }
@@ -431,7 +430,7 @@ fun AnimeTopAppBar(
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = backGroundColor
+                containerColor = if(isBackButton) MaterialTheme.colorScheme.primary else backGroundColor
             ),
             modifier = Modifier
                 .fillMaxWidth()
