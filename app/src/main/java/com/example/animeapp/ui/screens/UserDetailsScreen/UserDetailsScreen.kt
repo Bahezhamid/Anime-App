@@ -37,7 +37,8 @@ fun UserDetainsScreen(
                 AnimeTopAppBar(
                     title = "",
                     isBackButton = true,
-                    onBackButtonClicked = onBackButtonClicked
+                    onBackButtonClicked = onBackButtonClicked,
+                    backGroundColor = MaterialTheme.colorScheme.primary
                 )
             }
         ) { innerPadding ->

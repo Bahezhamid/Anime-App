@@ -75,6 +75,7 @@ fun HomeScreen(
     onProfileClicked : () -> Unit,
     onPlayButtonClicked : (Int) -> Unit,
     onInfoButtonClicked : (Int) -> Unit,
+    onSearchButtonClicked : () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -107,6 +108,7 @@ fun HomeScreen(
                     onInfoButtonClicked = onInfoButtonClicked,
                     isFirstAnimeInserted = homePageViewModel.isAnimeAddedToFavorite.collectAsState().value,
                     homePageViewModel = homePageViewModel,
+                    onSearchButtonClicked = onSearchButtonClicked
                 )
                 is AnimeDataUiState.Error -> ErrorScreen(
                     homePageViewModel::getAnimeData,
@@ -154,6 +156,7 @@ fun AllAnimeScreen(
     onInfoButtonClicked : (Int) -> Unit,
     isFirstAnimeInserted: Boolean,
     homePageViewModel: HomePageViewModel,
+    onSearchButtonClicked : () -> Unit,
 ) {
     val animeData =
         (homePageViewModel.uiState.collectAsState().value as AnimeDataUiState.Success).animeData
@@ -197,6 +200,7 @@ fun AllAnimeScreen(
                 AnimeTopAppBar(
                     title = "",
                     backGroundColor = Color.Transparent,
+                    onSearchButtonClicked = onSearchButtonClicked
                 )
                 Box(
                     modifier = Modifier
@@ -330,7 +334,7 @@ fun AllAnimeScreen(
         item(
             span = { GridItemSpan(3) }
         ) {
-            Text(text = "Top Ten Anime", style = MaterialTheme.typography.headlineMedium)
+            Text(text = "Top 10 Anime", style = MaterialTheme.typography.headlineMedium)
         }
         allAnimeData?.data?.let {
             items(it.filterNotNull()) { anime ->

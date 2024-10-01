@@ -369,7 +369,8 @@ fun LoginAndSignUpPage(
                             contentDescription = stringResource(R.string.facebook_icon),
                             modifier = Modifier
                                 .size(80.dp)
-                                .padding(end = 8.dp)
+                                .padding(end = 8.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                         Box(
                             modifier = Modifier
@@ -383,7 +384,8 @@ fun LoginAndSignUpPage(
                             contentDescription = stringResource(R.string.google_icon),
                             modifier = Modifier
                                 .size(80.dp)
-                                .padding(start = 8.dp)
+                                .padding(start = 8.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                     Spacer(modifier = Modifier.height(30.dp))

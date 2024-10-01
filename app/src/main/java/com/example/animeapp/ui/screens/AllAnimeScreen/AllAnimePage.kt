@@ -48,14 +48,18 @@ fun AllAnimePage(
     onHomeButtonClicked : () -> Unit,
     onSavedButtonClicked : () -> Unit,
     onProfileClicked : () -> Unit,
-    onAnimeClicked : (Int) -> Unit
+    onAnimeClicked : (Int) -> Unit,
+  onSearchButtonClicked : () -> Unit,
 
 ) {
     val allGenresUiState by allAnimeViewScreenModel.allGenresUiState.collectAsState()
     val allSelectedAnimeByGenreState by allAnimeViewScreenModel.allSelectedAnimeByGenre.collectAsState()
     Scaffold (
         topBar = {
-            AnimeTopAppBar(title = "Browse")
+            AnimeTopAppBar(
+                title = "Browse",
+                onSearchButtonClicked = onSearchButtonClicked
+                )
         },
         bottomBar = {
             AnimeBottomNavigationBar(

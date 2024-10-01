@@ -30,4 +30,6 @@ interface AnimeApiService {
         @Query("order_by") orderBy: String = "rank",
         @Query("limit") limit: Int = 10
     ): AnimeData
+    @GET("anime")
+    suspend fun getAnimeByName(@Query("q") animeName : String) : AnimeData
 }

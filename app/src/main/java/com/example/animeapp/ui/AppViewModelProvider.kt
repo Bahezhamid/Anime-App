@@ -15,6 +15,7 @@ import com.example.animeapp.ui.screens.AnimeChapterScreen.AnimeChaptersViewModel
 import com.example.animeapp.ui.screens.CharactersDetailsPage.CharactersDetailsPage
 import com.example.animeapp.ui.screens.CharactersDetailsPage.CharactersDetailsViewModel
 import com.example.animeapp.ui.screens.SavedAnimeScreen.SavedAnimeViewModel
+import com.example.animeapp.ui.screens.SearchScreen.SearchScreenViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
@@ -46,6 +47,9 @@ object AppViewModelProvider {
         initializer {
             SavedAnimeViewModel(animeApplication().container.animeDataRepository,
             )
+        }
+        initializer {
+            SearchScreenViewModel(animeApplication().container.animeDataRepository)
         }
 
     }

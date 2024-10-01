@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -63,6 +64,8 @@ import com.example.animeapp.ui.screens.HomePage.HomeScreen
 import com.example.animeapp.ui.screens.LandingPage.LandingPage
 import com.example.animeapp.ui.screens.SavedAnimeScreen.SavedAnimePage
 import com.example.animeapp.ui.screens.SavedAnimeScreen.SavedAnimeViewModel
+import com.example.animeapp.ui.screens.SearchScreen.SearchScreen
+import com.example.animeapp.ui.screens.SearchScreen.SearchScreenViewModel
 import com.example.animeapp.ui.screens.UserDetailsScreen.UserDetailsViewModel
 import com.example.animeapp.ui.screens.UserDetailsScreen.UserDetainsScreen
 import com.example.animeapp.ui.screens.logInAndSignUp.LoginAndSignUpPage
@@ -76,10 +79,10 @@ fun AnimeApp(
     savedAnimeViewModel: SavedAnimeViewModel = viewModel(factory = AppViewModelProvider.Factory),
     allAnimeViewScreenModel: AllAnimeViewScreenModel = viewModel(factory = AppViewModelProvider.Factory),
     emailAndPasswordChangeViewModel: EmailAndPasswordChangeViewModel = viewModel(),
-    userDetailsViewModel: UserDetailsViewModel = viewModel()
+    userDetailsViewModel: UserDetailsViewModel = viewModel(),
+    searchScreenViewModel: SearchScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
 
-    Log.d("dd", loginAndSignUpViewModel.loginUiState.collectAsState().value.toString())
     NavHost(
         navController = navController,
         startDestination = AnimeScreen.Start.route,
@@ -159,6 +162,9 @@ fun AnimeApp(
                     navController.navigate("animeDetails/$animeId")
                 },
                 homePageViewModel = homePageViewModel,
+                onSearchButtonClicked = {
+                    navController.navigate("searchScreen")
+                }
 
             )
         }
@@ -192,7 +198,8 @@ fun AnimeApp(
                 onAnimeClicked = { animeId ->
                     navController.navigate("animeDetails/$animeId")
                 },
-                onCreateNewListClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)}
+                onCreateNewListClicked = {navController.navigate(AnimeScreen.AllAnimeScreen.route)},
+                onSearchButtonClicked = {navController.navigate("searchScreen")}
             )
         }
         composable(route = AnimeScreen.AllAnimeScreen.route) {
@@ -204,6 +211,7 @@ fun AnimeApp(
                     navController.navigate("animeDetails/$animeId")
                 },
                 allAnimeViewScreenModel = allAnimeViewScreenModel,
+                onSearchButtonClicked = {navController.navigate("searchScreen")}
             )
         }
         composable(route = AnimeScreen.CharacterDetailsPage.route) {  backStackEntry ->
@@ -292,7 +300,15 @@ fun AnimeApp(
                 },
             )
         }
-
+        composable(route = AnimeScreen.SearchScreen.route){
+            SearchScreen (
+                onBackPressed = {navController.navigateUp()},
+                onAnimeClicked = {animeId->
+                    navController.navigate("animeDetails/$animeId")
+                },
+                searchScreenViewModel = searchScreenViewModel
+            )
+        }
     }
 }
 
@@ -320,7 +336,8 @@ fun AnimeBottomNavigationBar(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_home),
                         contentDescription = "Home",
-                        modifier = Modifier.size(25.dp)
+                        modifier = Modifier
+                            .size(25.dp)
                             .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Home) 1f else 0.5f),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
@@ -336,7 +353,8 @@ fun AnimeBottomNavigationBar(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_saved),
                         contentDescription = "Saved",
-                        modifier = Modifier.size(25.dp)
+                        modifier = Modifier
+                            .size(25.dp)
                             .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Saved) 1f else 0.5f),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
@@ -352,7 +370,8 @@ fun AnimeBottomNavigationBar(
                     Icon(
                         imageVector = Icons.Filled.VideoLibrary,
                         contentDescription = "Anime And Manga",
-                        modifier = Modifier.size(25.dp)
+                        modifier = Modifier
+                            .size(25.dp)
                             .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Book) 1f else 0.5f),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
@@ -368,7 +387,8 @@ fun AnimeBottomNavigationBar(
                     Icon(
                         imageVector = Icons.Filled.Person,
                         contentDescription = "Profile",
-                        modifier = Modifier.size(25.dp)
+                        modifier = Modifier
+                            .size(25.dp)
                             .graphicsLayer(alpha = if (selectedTab == BottomNavItem.Profile) 1f else 0.5f),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
@@ -394,6 +414,7 @@ fun AnimeTopAppBar(
     title: String,
     isBackButton: Boolean = false,
     onBackButtonClicked : () -> Unit ={},
+    onSearchButtonClicked : () -> Unit = {},
     backGroundColor : Color = MaterialTheme.colorScheme.secondary,
 ) {
         TopAppBar(
@@ -425,12 +446,12 @@ fun AnimeTopAppBar(
                         modifier = Modifier
                             .padding(end = 10.dp)
                             .size(25.dp)
-
+                            .clickable { onSearchButtonClicked() }
                     )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = if(isBackButton) MaterialTheme.colorScheme.primary else backGroundColor
+                containerColor =backGroundColor
             ),
             modifier = Modifier
                 .fillMaxWidth()

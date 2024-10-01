@@ -101,7 +101,8 @@ fun AnimeDetailsPage(
             AnimeTopAppBar(
                 title = "",
                 isBackButton = true,
-                onBackButtonClicked = onBackPressed
+                onBackButtonClicked = onBackPressed,
+                backGroundColor = MaterialTheme.colorScheme.primary
             )
         }
     ){ innerPadding ->

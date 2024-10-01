@@ -48,6 +48,7 @@ fun SavedAnimePage (
     onAnimeClicked : (Int) -> Unit,
     onCreateNewListClicked : () -> Unit,
     loginAndSignUpViewModel: LoginAndSignUpViewModel,
+    onSearchButtonClicked : () -> Unit,
     savedAnimeViewModel: SavedAnimeViewModel
 ) {
     val userId = loginAndSignUpViewModel.loginUiState.collectAsState().value.userid
@@ -58,6 +59,7 @@ fun SavedAnimePage (
         topBar = {
             AnimeTopAppBar(
                 title = "My List",
+                onSearchButtonClicked = onSearchButtonClicked
             )
         },
         bottomBar = {
