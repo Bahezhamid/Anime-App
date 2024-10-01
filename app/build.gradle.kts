@@ -119,5 +119,8 @@ dependencies {
     //notification 
     implementation (libs.androidx.core.ktx.v190)
 
+    //google sign in
+    implementation ("com.google.android.gms:play-services-auth:20.4.1")
+
 
 }

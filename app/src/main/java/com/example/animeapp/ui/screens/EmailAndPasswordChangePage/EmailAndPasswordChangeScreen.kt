@@ -135,8 +135,6 @@ fun EmailAndPasswordChangeScreen(
                             if (isPasswordChangePage) newPasswordFocusRequester.requestFocus()
                             else newEmailFocusRequester.requestFocus()
                         },
-                        isError = if (isPasswordChangePage) emailAndPasswordUiState.value.currentPasswordError != null
-                        else emailAndPasswordUiState.value.currentEmailError != null,
                         errorMessage = if (isPasswordChangePage) emailAndPasswordUiState.value.currentPasswordError else emailAndPasswordUiState.value.currentEmailError
                     )
                     Spacer(modifier = Modifier.height(10.dp))
@@ -159,8 +157,6 @@ fun EmailAndPasswordChangeScreen(
                             if (isPasswordChangePage) confirmPasswordFocusRequester.requestFocus()
                             else confirmEmailFocusRequester.requestFocus()
                         },
-                        isError = if (isPasswordChangePage) emailAndPasswordUiState.value.passwordError != null
-                        else emailAndPasswordUiState.value.emailError != null,
                         errorMessage = if (isPasswordChangePage) emailAndPasswordUiState.value.passwordError else emailAndPasswordUiState.value.emailError
                     )
                     LoginAndSignUpTextField(
@@ -180,8 +176,6 @@ fun EmailAndPasswordChangeScreen(
                         isPassword = isPasswordChangePage,
                         onImeAction = {if(isPasswordChangePage) emailAndPasswordChangeViewModel.updatePassword(emailAndPasswordUiState.value)
                         else passwordFocusRequester.requestFocus()},
-                        isError = if (isPasswordChangePage) emailAndPasswordUiState.value.confirmPasswordError != null
-                        else emailAndPasswordUiState.value.confirmEmailError != null,
                         errorMessage = if (isPasswordChangePage) emailAndPasswordUiState.value.confirmPasswordError else emailAndPasswordUiState.value.confirmEmailError
                     )
                     if(!isPasswordChangePage) {
@@ -196,7 +190,6 @@ fun EmailAndPasswordChangeScreen(
                             ),
                             isPassword = true,
                             onImeAction = { emailAndPasswordChangeViewModel.updateEmail(emailAndPasswordChangeUiState = emailAndPasswordUiState.value, emailAndPasswordUiState.value.password)},
-                            isError = emailAndPasswordUiState.value.passwordError != null,
                             errorMessage = emailAndPasswordUiState.value.passwordError
                         )
                     }

@@ -32,4 +32,6 @@ interface AnimeApiService {
     ): AnimeData
     @GET("anime")
     suspend fun getAnimeByName(@Query("q") animeName : String) : AnimeData
+    @GET("anime")
+    suspend fun getAnimeByGenre(@Query("genres")genreId : Int, @Query("page") page : Int) : AnimeData
 }

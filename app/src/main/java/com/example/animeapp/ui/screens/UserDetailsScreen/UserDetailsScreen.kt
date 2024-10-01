@@ -66,32 +66,30 @@ fun UserDetainsScreen(
                     .padding(horizontal = 10.dp)
 
                 ,
-                verticalArrangement = Arrangement.SpaceEvenly,
+                verticalArrangement = Arrangement.SpaceAround,
             ){
                 Text(
                     text = "Your User Name :",
                     style = MaterialTheme.typography.titleLarge
                 )
-                Spacer(modifier = Modifier.height(5.dp))
                 userData.userName?.let {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(15.dp))
                 Text(
                     text = "Your Email :",
                     style = MaterialTheme.typography.titleLarge
                 )
-                Spacer(modifier = Modifier.height(5.dp))
                 userData.email?.let {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(15.dp))
                 Text(
                     text = "Your Favorite Anime : ${userDetailsViewModel.favoriteCount.collectAsState().value}",
                     style = MaterialTheme.typography.titleLarge

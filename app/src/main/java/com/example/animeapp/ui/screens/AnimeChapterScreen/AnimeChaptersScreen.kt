@@ -247,6 +247,7 @@ fun PageNavigationRow(
             TextButton(
                 onClick = { onPageClick(page) },
                 modifier = Modifier
+
                     .padding(horizontal = 4.dp)
                     .border(
                         width = 1.dp,

@@ -1,5 +1,6 @@
 package com.example.animeapp.ui.screens.AllAnimeScreen
 
+import android.content.ClipData.Item
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -40,6 +42,7 @@ import com.example.animeapp.BottomNavItem
 import com.example.animeapp.R
 import com.example.animeapp.model.AllGenres
 import com.example.animeapp.ui.AppViewModelProvider
+import com.example.animeapp.ui.screens.AnimeChapterScreen.PageNavigationRow
 import com.example.animeapp.ui.screens.HomePage.AnimeCard
 
 @Composable
@@ -89,12 +92,14 @@ fun AllAnimePage(
                     allGenres = genres,
                     onGenreClicked = { genre ->
                         if (genre != null) {
-                            allAnimeViewScreenModel.getAnimeByGenre(genre)
+                            allAnimeViewScreenModel.getAnimeByGenre(genre , page = 1)
+                            allAnimeViewScreenModel.updateCurrentPage(1)
                         }
                     },
                     allAnimeSelectedByGenre = allSelectedAnimeByGenreState,
                     onAnimeClicked = onAnimeClicked,
-                    allAnimeSelected = {allAnimeViewScreenModel.fetchAllData()}
+                    allAnimeSelected = {allAnimeViewScreenModel.fetchAllData()},
+                    allAnimeViewScreenModel = allAnimeViewScreenModel
                 )
                 }
             is AllGenreUiState.Error -> ErrorScreen(
@@ -139,12 +144,13 @@ fun ErrorScreen(retryAction: () -> Unit,modifier: Modifier = Modifier) {
 fun AllAnimeScreen(
     allGenres: AllGenres?,
     allAnimeSelected : () -> Unit,
-    onGenreClicked: (String?) -> Unit,
+    onGenreClicked: (Int?) -> Unit,
     allAnimeSelectedByGenre: AllAnimeByGenreUiState,
     onAnimeClicked: (Int) -> Unit,
+    allAnimeViewScreenModel: AllAnimeViewScreenModel
     ) {
-    var selectedGenre by remember { mutableStateOf<String?>("All") }
-
+    var selectedGenre = allAnimeViewScreenModel.selectedGenre.collectAsState().value
+    val currentPage = allAnimeViewScreenModel.currentPage.collectAsState()
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -152,9 +158,9 @@ fun AllAnimeScreen(
         ) {
             item {
                 GenreChip(genre = "All",
-                    isSelected = selectedGenre == "All",
+                    isSelected = selectedGenre == 0,
                     onClick = {
-                        selectedGenre = "All"
+                       allAnimeViewScreenModel.updateSelectedGenre(0)
                         allAnimeSelected()
                     }
                 )
@@ -163,15 +169,16 @@ fun AllAnimeScreen(
                 items(it) { genre ->
                     GenreChip(
                         genre = genre.name,
-                        isSelected = selectedGenre == genre.name,
+                        isSelected = selectedGenre == genre.malId,
                         onClick = {
-                            selectedGenre = genre.name
+                            allAnimeViewScreenModel.updateSelectedGenre(genre.malId!!)
                             onGenreClicked(selectedGenre)
                         }
                     )
                 }
             }
     }
+
     when(allAnimeSelectedByGenre) {
         is AllAnimeByGenreUiState.Loading -> LoadingScreen(
             modifier = Modifier.fillMaxSize()
@@ -183,18 +190,7 @@ fun AllAnimeScreen(
         is AllAnimeByGenreUiState.Success -> {
             val allAnimeByGenre
             = (allAnimeSelectedByGenre as AllAnimeByGenreUiState.Success).animeList
-            val isAnimeListEmpty = allAnimeByGenre.isNullOrEmpty()
-            if(isAnimeListEmpty){
-                Text(
-                    text = "No anime found for this genre.",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
-                )
-            }else {
+
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     modifier = Modifier
@@ -206,17 +202,27 @@ fun AllAnimeScreen(
                         bottom = 10.dp,
                     ),
                 ) {
-                    allAnimeByGenre?.let {
-                       items(it.filterNotNull()) {anime ->
-                           AnimeCard(animeId = anime.malId,
-                               animeTitle = anime.title,
-                               animePoster = anime.images?.jpg?.imageUrl,
-                               onAnimeClicked = onAnimeClicked,
-                           )
-                       }
+                    items(allAnimeByGenre?.data!!.filterNotNull()) { anime ->
+                        AnimeCard(animeId = anime.malId,
+                            animeTitle = anime.title,
+                            animePoster = anime.images?.jpg?.imageUrl,
+                            onAnimeClicked = onAnimeClicked,
+                        )
+                    }
+                    item (  span = { GridItemSpan(3) }){
+                        allAnimeByGenre.pagination?.lastVisiblePage?.let {
+                            PageNavigationRow(
+                                currentPage =currentPage.value,
+                                totalPages = it,
+                                onPageClick ={ page ->
+                                    allAnimeViewScreenModel.updateCurrentPage(page)
+                                    selectedGenre.let { it1 -> allAnimeViewScreenModel.getAnimeByGenre(genreId = it1 , page= page) }
+                                },
+                            )
+                        }
                     }
                 }
-            }
+
         }
     }
 
