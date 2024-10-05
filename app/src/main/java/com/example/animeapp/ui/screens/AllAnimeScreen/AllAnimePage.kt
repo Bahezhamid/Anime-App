@@ -92,7 +92,7 @@ fun AllAnimePage(
                     allGenres = genres,
                     onGenreClicked = { genre ->
                         if (genre != null) {
-                            allAnimeViewScreenModel.getAnimeByGenre(genre , page = 1)
+                            allAnimeViewScreenModel.getAnimeByGenre()
                             allAnimeViewScreenModel.updateCurrentPage(1)
                         }
                     },
@@ -216,7 +216,7 @@ fun AllAnimeScreen(
                                 totalPages = it,
                                 onPageClick ={ page ->
                                     allAnimeViewScreenModel.updateCurrentPage(page)
-                                    selectedGenre.let { it1 -> allAnimeViewScreenModel.getAnimeByGenre(genreId = it1 , page= page) }
+                                    selectedGenre.let { it1 -> allAnimeViewScreenModel.getAnimeByGenre() }
                                 },
                             )
                         }
