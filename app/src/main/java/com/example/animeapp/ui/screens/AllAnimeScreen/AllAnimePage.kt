@@ -160,8 +160,8 @@ fun AllAnimeScreen(
                 GenreChip(genre = "All",
                     isSelected = selectedGenre == 0,
                     onClick = {
-                       allAnimeViewScreenModel.updateSelectedGenre(0)
-                        allAnimeSelected()
+                        allAnimeViewScreenModel.updateSelectedGenre(0)
+                        onGenreClicked(selectedGenre)
                     }
                 )
             }
