@@ -37,7 +37,6 @@ class LoginAndSignUpViewModel(
     init {
 
         viewModelScope.launch {
-
             userPreferencesRepository.userEmail.collect { savedEmail ->
                 userPreferencesRepository.userPassword.collect { savedPassword ->
                     if (!savedEmail.isNullOrEmpty() && !savedPassword.isNullOrEmpty()) {

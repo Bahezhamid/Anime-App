@@ -124,8 +124,7 @@ fun LoginAndSignUpPage(
         ) }
 
     ){
-        innerPadding ->
-
+            innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -179,13 +178,13 @@ fun LoginAndSignUpPage(
                         onImeAction = {
                             if (isSignUpPage) userNameFocusRequester.requestFocus()
                             else if (isForgetPasswordPage) { keyboardController?.hide()
-                            coroutineScope.launch {
-                                viewModel.forgetPassword(signUpState = viewModel.uiState.value)
-                                if(!loginUiState.isLoading && loginUiState.isPasswordResetSent){
-                                    onForgetPasswordButtonClicked()
+                                coroutineScope.launch {
+                                    viewModel.forgetPassword(signUpState = viewModel.uiState.value)
+                                    if(!loginUiState.isLoading && loginUiState.isPasswordResetSent){
+                                        onForgetPasswordButtonClicked()
+                                    }
                                 }
                             }
-                                }
                             else passwordFocusRequester.requestFocus()
                         },
                         isError = viewModel.uiState.collectAsState().value.emailError != null,
@@ -279,7 +278,7 @@ fun LoginAndSignUpPage(
                         )
                     }
                     if(!isForgetPasswordPage) {
-                    Spacer(modifier = Modifier.height(15.dp))
+                        Spacer(modifier = Modifier.height(15.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -319,7 +318,7 @@ fun LoginAndSignUpPage(
                             coroutineScope.launch {
                                 if (isForgetPasswordPage) {
                                     coroutineScope.launch {
-                                       viewModel.forgetPassword(signUpState = viewModel.uiState.value)
+                                        viewModel.forgetPassword(signUpState = viewModel.uiState.value)
                                         if(!loginUiState.isLoading && loginUiState.isPasswordResetSent){
                                             onForgetPasswordButtonClicked()
                                         }
@@ -436,18 +435,10 @@ fun LoginAndSignUpTextField(
         keyboardOptions = keyboardOptions,
         keyboardActions = KeyboardActions(onAny = { onImeAction() }),
 
-    )
+        )
     errorMessage.let { error ->
         if (error != null) {
             Text(text = error, color = Color.Red)
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginAndSignupPagePreview() {
-    AnimeAppTheme {
-
     }
 }

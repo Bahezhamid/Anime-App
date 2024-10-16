@@ -325,7 +325,6 @@ fun AnimeBottomNavigationBar(
             backgroundColor = MaterialTheme.colorScheme.secondary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
             elevation = 8.dp,
-
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()

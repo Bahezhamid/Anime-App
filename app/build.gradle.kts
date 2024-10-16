@@ -8,14 +8,12 @@ plugins {
 android {
     namespace = "com.example.animeapp"
     compileSdk = 34
-
     defaultConfig {
         applicationId = "com.example.animeapp"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -114,7 +112,7 @@ dependencies {
     // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("org.jetbrains.tkotlinx:kotlinx-coroutines-test:1.7.3")
 
     //notification 
     implementation (libs.androidx.core.ktx.v190)
@@ -122,5 +120,27 @@ dependencies {
     //google sign in
     implementation ("com.google.android.gms:play-services-auth:20.4.1")
 
+    // Local Unit Tests
+    implementation(libs.androidx.core)
+    testImplementation(libs.junit.v413)
+    testImplementation(libs.hamcrest.all)
+    testImplementation(libs.androidx.core.testing)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.jetbrains.kotlinx.coroutines.test)
+    testImplementation(libs.truth)
+    testImplementation(libs.mockito.core)
+    testImplementation("com.linkedin.dexmaker:dexmaker-mockito:2.28.1")
+    testImplementation (libs.junit)
+    // Instrumented Unit Tests
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.dexmaker.mockito)
+    androidTestImplementation(libs.jetbrains.kotlinx.coroutines.test)
+    androidTestImplementation(libs.androidx.core.testing.v210)
+    androidTestImplementation(libs.truth)
+    androidTestImplementation(libs.androidx.junit.v111)
+    androidTestImplementation(libs.androidx.espresso.core.v320)
+    androidTestImplementation(libs.mockito.core)
+    androidTestImplementation("com.linkedin.dexmaker:dexmaker-mockito:2.28.1")
+    androidTestImplementation (libs.junit)
 
 }
